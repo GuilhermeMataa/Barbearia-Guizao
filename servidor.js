@@ -24,6 +24,7 @@ if (
 
 const rotasServicos = require("./rotas/servicos");
 const rotasAutenticacao = require("./rotas/autenticacao");
+const rotasAgendamentos = require("./rotas/agendamentos");
 
 const app = express();
 const PORTA = Number(process.env.PORT) || 3000;
@@ -49,6 +50,8 @@ app.get("/api/saude", (req, res) => {
 // Rotas da API.
 app.use("/api/auth", rotasAutenticacao);
 app.use("/api/servicos", rotasServicos);
+app.use("/api/agendamentos", rotasAgendamentos);
+
 
 // Frontend.
 app.use(express.static(

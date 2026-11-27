@@ -1,7 +1,7 @@
 
 /**
  * Guizao do Corte - Rotas de servicos.
- * Camada: rotas.
+ * Camada de rotas HTTP.
  */
 
 "use strict";
@@ -12,9 +12,17 @@ const servicosService = require(
     "../servicos/servicosService"
 );
 
+const {
+    exigirAutenticacao,
+    exigirAdmin
+} = require("../middlewares/autenticacao");
+
 const router = express.Router();
 
+// ==========================================
 // GET /api/servicos
+// Lista os servicos ativos.
+// ==========================================
 router.get("/", (req, res, next) => {
     try {
         const servicos =
@@ -27,7 +35,48 @@ router.get("/", (req, res, next) => {
     }
 });
 
+// ==========================================
+// POST /api/servicos
+// Somente administradores.
+// ==========================================
+router.post(
+    "/",
+    exigirAutenticacao,
+    exigirAdmin,
+    (req, res, next) => {
+        try {
+            const novoServico =
+                servicosService.cadastrarServico(
+                    req.body
+                );
+
+            res.location(
+                `/api/servicos/${novoServico.id}`
+            );
+
+            return res.status(201).json(
+                novoServico
+            );
+
+        } catch (erro) {
+            if (
+                erro.status === 400 ||
+                erro.status === 409
+            ) {
+                return res.status(erro.status).json({
+                    erro: erro.message
+                });
+            }
+
+            next(erro);
+        }
+    }
+);
+
+// ==========================================
 // GET /api/servicos/:id
+// Consulta um servico pelo ID.
+// ==========================================
 router.get("/:id", (req, res, next) => {
     try {
         const idTexto = req.params.id;

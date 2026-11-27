@@ -1,9 +1,7 @@
 
 /**
  * Guizao do Corte - Repositorio de servicos.
- * Camada: dados.
- *
- * Responsavel pelas consultas SQL dos servicos.
+ * Camada de acesso ao banco SQLite.
  */
 
 "use strict";
@@ -11,12 +9,11 @@
 const db = require("./conexao");
 
 /**
- * Lista todos os servicos ativos.
- *
- * @returns {Array<object>} Servicos cadastrados.
+ * Lista os servicos ativos.
+ * @returns {Array<object>}
  */
 function listarAtivos() {
-    const sql = `
+    return db.prepare(`
         SELECT
             id,
             nome,
@@ -26,19 +23,16 @@ function listarAtivos() {
         FROM servicos
         WHERE ativo = 1
         ORDER BY nome ASC
-    `;
-
-    return db.prepare(sql).all();
+    `).all();
 }
 
 /**
- * Busca um servico ativo pelo identificador.
- *
- * @param {number} id - ID do servico.
- * @returns {object|undefined} Servico encontrado.
+ * Busca um servico ativo pelo ID.
+ * @param {number} id
+ * @returns {object|undefined}
  */
 function buscarAtivoPorId(id) {
-    const sql = `
+    return db.prepare(`
         SELECT
             id,
             nome,
@@ -48,12 +42,41 @@ function buscarAtivoPorId(id) {
         FROM servicos
         WHERE id = ?
           AND ativo = 1
+    `).get(id);
+}
+
+/**
+ * Insere um servico no banco e retorna o registro.
+ * Utiliza SQL parametrizado para evitar injecao SQL.
+ *
+ * @param {object} dados
+ * @returns {object}
+ */
+function cadastrar(dados) {
+    const sql = `
+        INSERT INTO servicos (
+            nome,
+            descricao,
+            duracao_minutos,
+            preco_centavos
+        )
+        VALUES (?, ?, ?, ?)
     `;
 
-    return db.prepare(sql).get(id);
+    const resultado = db.prepare(sql).run(
+        dados.nome,
+        dados.descricao,
+        dados.duracao_minutos,
+        dados.preco_centavos
+    );
+
+    const id = Number(resultado.lastInsertRowid);
+
+    return buscarAtivoPorId(id);
 }
 
 module.exports = {
     listarAtivos,
-    buscarAtivoPorId
+    buscarAtivoPorId,
+    cadastrar
 };

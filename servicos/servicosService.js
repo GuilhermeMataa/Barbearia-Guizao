@@ -11,10 +11,11 @@ const repositorio = require(
 );
 
 /**
- * Cria um erro com status HTTP.
- * @param {number} status
- * @param {string} mensagem
- * @returns {Error}
+ * Cria erro de negócio com status HTTP.
+ *
+ * @param {number} status - Código HTTP
+ * @param {string} mensagem - Motivo
+ * @returns {Error} Erro contextualizado
  */
 function erroHttp(status, mensagem) {
     const erro = new Error(mensagem);
@@ -23,27 +24,32 @@ function erroHttp(status, mensagem) {
 }
 
 /**
- * Lista servicos ativos.
- * @returns {Array<object>}
+ * Lista serviços ativos consultando o repositório.
+ *
+ * @returns {object[]} Serviços disponíveis
+ * @throws {Error} Falha de leitura SQLite
  */
 function listarServicos() {
     return repositorio.listarAtivos();
 }
 
 /**
- * Busca um servico ativo pelo ID.
- * @param {number} id
- * @returns {object|undefined}
+ * Consulta serviço por ID validado.
+ *
+ * @param {number} id - ID do serviço
+ * @returns {object|undefined} Serviço ativo ou ausente
+ * @throws {Error} Falha de leitura SQLite
  */
 function buscarServico(id) {
     return repositorio.buscarAtivoPorId(id);
 }
 
 /**
- * Valida os dados de um novo servico.
+ * Valida formato e limites do serviço no servidor.
  *
- * @param {object} dados
- * @returns {object} Dados validados.
+ * @param {object} dados - Nome, descrição, duração e preço
+ * @returns {object} Valores normalizados
+ * @throws {Error} Status 400 para dados inválidos
  */
 function validarNovoServico(dados) {
     if (
@@ -133,10 +139,11 @@ function validarNovoServico(dados) {
 }
 
 /**
- * Cadastra um novo servico.
+ * Cadastra serviço com restrição de nome único.
  *
- * @param {object} dados
- * @returns {object}
+ * @param {object} dados - Dados do serviço
+ * @returns {object} Serviço persistido
+ * @throws {Error} Status 400 ou 409
  */
 function cadastrarServico(dados) {
     const dadosValidados = validarNovoServico(dados);
@@ -157,10 +164,11 @@ function cadastrarServico(dados) {
 }
 
 /**
- * Desativa um servico cadastrado.
+ * Desativa serviço sem excluir histórico.
  *
- * @param {number} id - ID do servico.
- * @returns {boolean} true se foi desativado.
+ * @param {number} id - ID do serviço
+ * @returns {boolean} Indica se foi desativado
+ * @throws {Error} Falha SQLite
  */
 function desativarServico(id) {
     return repositorio.desativar(id);
@@ -168,11 +176,12 @@ function desativarServico(id) {
 
 
 /**
- * Valida e atualiza um servico.
+ * Atualiza serviço após validar todas as entradas.
  *
- * @param {number} id
- * @param {object} dados
- * @returns {object|undefined}
+ * @param {number} id - ID do serviço
+ * @param {object} dados - Novos valores
+ * @returns {object|undefined} Registro alterado ou ausente
+ * @throws {Error} Status 400 ou 409
  */
 function atualizarServico(id, dados) {
     const dadosValidados = validarNovoServico(dados);

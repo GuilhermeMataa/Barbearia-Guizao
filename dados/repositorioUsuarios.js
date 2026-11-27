@@ -8,7 +8,11 @@
 const db = require("./conexao");
 
 /**
- * Busca usuario pelo email para autenticar.
+ * Busca hash somente para comparar senha no servidor.
+ *
+ * @param {string} email - E-mail normalizado
+ * @returns {object|undefined} Dados internos de autenticação
+ * @throws {Error} Falha de leitura SQLite
  */
 function buscarPorEmail(email) {
     return db.prepare(`
@@ -19,7 +23,11 @@ function buscarPorEmail(email) {
 }
 
 /**
- * Busca usuario pelo ID, sem expor a senha.
+ * Obtém perfil público sem expor hash ao navegador.
+ *
+ * @param {number} id - ID autenticado
+ * @returns {object|undefined} Perfil sem hash
+ * @throws {Error} Falha de leitura SQLite
  */
 function buscarPorId(id) {
     return db.prepare(`
@@ -30,8 +38,11 @@ function buscarPorId(id) {
 }
 
 /**
- * Cadastra uma conta com papel de cliente.
- * O navegador nunca pode definir o papel.
+ * Grava exclusivamente papel cliente mesmo que o navegador tente indicar outro.
+ *
+ * @param {object} dados - Nome, e-mail e hash já calculado
+ * @returns {object} Perfil salvo sem hash
+ * @throws {Error} Violação de e-mail UNIQUE ou falha SQLite
  */
 function cadastrarCliente(dados) {
     const resultado = db.prepare(`

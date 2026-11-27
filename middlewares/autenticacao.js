@@ -1,3 +1,8 @@
+/**
+ * Guizao do Corte - Autenticacao e autorizacao.
+ * Camada: middlewares HTTP.
+ * Valida tokens JWT e restringe rotas conforme o papel do usuario.
+ */
 
 "use strict";
 
@@ -5,7 +10,15 @@ const jwt = require("jsonwebtoken");
 const usuarios = require("../dados/repositorioUsuarios");
 
 /**
- * Verifica se o usuario enviou um JWT valido.
+ * Verifica o JWT e identifica o usuario no banco de dados.
+ *
+ * O ID vem do token validado, nunca do corpo da requisicao.
+ * A consulta ao banco impede o acesso de usuarios inexistentes.
+ *
+ * @param {object} req - Requisicao HTTP.
+ * @param {object} res - Resposta HTTP.
+ * @param {Function} next - Proximo middleware.
+ * @returns {void}
  */
 function exigirAutenticacao(req, res, next) {
     const autorizacao = req.headers.authorization || "";
@@ -63,8 +76,15 @@ function exigirAutenticacao(req, res, next) {
 }
 
 /**
- * Permite acesso somente a administradores.
- * Usar depois de exigirAutenticacao.
+ * Restringe o acesso a usuarios administradores.
+ *
+ * Deve ser utilizado depois de exigirAutenticacao.
+ * A permissao e conferida no servidor, nao no frontend.
+ *
+ * @param {object} req - Requisicao com usuario autenticado.
+ * @param {object} res - Resposta HTTP.
+ * @param {Function} next - Proximo middleware.
+ * @returns {void}
  */
 function exigirAdmin(req, res, next) {
     if (!req.usuario) {

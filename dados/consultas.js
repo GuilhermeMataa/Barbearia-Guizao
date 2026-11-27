@@ -11,10 +11,10 @@
 const db = require("./conexao");
 
 /**
- * Lista os agendamentos com o nome do cliente
- * e o nome do servico contratado.
+ * Relaciona usuários, serviços e reservas com JOIN.
  *
- * @returns {Array<object>} Lista de agendamentos.
+ * @returns {object[]} Registros relacionados
+ * @throws {Error} Falha SQLite
  */
 function listarAgendamentos() {
     const sql = `
@@ -37,10 +37,10 @@ function listarAgendamentos() {
 }
 
 /**
- * Conta os agendamentos nao cancelados
- * de cada servico, incluindo servicos sem reservas.
+ * Agrega reservas por serviço usando COUNT e GROUP BY.
  *
- * @returns {Array<object>} Resumo por servico.
+ * @returns {object[]} Contagens de reservas
+ * @throws {Error} Falha SQLite
  */
 function resumoServicos() {
     const sql = `

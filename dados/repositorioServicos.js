@@ -9,8 +9,10 @@
 const db = require("./conexao");
 
 /**
- * Lista os servicos ativos.
- * @returns {Array<object>}
+ * Retorna apenas catálogo ativo.
+ *
+ * @returns {object[]} Serviços visíveis
+ * @throws {Error} Falha de leitura SQLite
  */
 function listarAtivos() {
     return db.prepare(`
@@ -27,9 +29,11 @@ function listarAtivos() {
 }
 
 /**
- * Busca um servico ativo pelo ID.
- * @param {number} id
- * @returns {object|undefined}
+ * Obtém serviço ativo por ID parametrizado.
+ *
+ * @param {number} id - ID do serviço
+ * @returns {object|undefined} Serviço ou ausência
+ * @throws {Error} Falha de leitura SQLite
  */
 function buscarAtivoPorId(id) {
     return db.prepare(`
@@ -46,11 +50,11 @@ function buscarAtivoPorId(id) {
 }
 
 /**
- * Insere um servico no banco e retorna o registro.
- * Utiliza SQL parametrizado para evitar injecao SQL.
+ * Persiste serviço validado sem SQL concatenado.
  *
- * @param {object} dados
- * @returns {object}
+ * @param {object} dados - Serviço normalizado pelo serviço de negócio
+ * @returns {object} Serviço criado
+ * @throws {Error} Restrição UNIQUE ou falha SQLite
  */
 function cadastrar(dados) {
     const sql = `
@@ -77,10 +81,11 @@ function cadastrar(dados) {
 
 
 /**
- * Desativa um servico sem apagar seu historico.
+ * Marca serviço como inativo sem apagar histórico.
  *
- * @param {number} id - ID do servico.
- * @returns {boolean} true se foi desativado.
+ * @param {number} id - ID do serviço
+ * @returns {boolean} Confirmação da alteração
+ * @throws {Error} Falha de atualização SQLite
  */
 function desativar(id) {
     const resultado = db.prepare(`
@@ -95,11 +100,12 @@ function desativar(id) {
 
 
 /**
- * Atualiza um servico ativo no SQLite.
+ * Atualiza serviço ativo com parâmetros SQL.
  *
- * @param {number} id
- * @param {object} dados
- * @returns {object|undefined}
+ * @param {number} id - ID do serviço
+ * @param {object} dados - Novos valores validados
+ * @returns {object|undefined} Serviço atualizado
+ * @throws {Error} Restrição UNIQUE ou falha SQLite
  */
 function atualizar(id, dados) {
     const resultado = db.prepare(`

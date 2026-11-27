@@ -10,6 +10,13 @@ const jwt = require("jsonwebtoken");
 
 const usuarios = require("../dados/repositorioUsuarios");
 
+/**
+ * Cria erro de validação com status HTTP.
+ *
+ * @param {number} status - Código HTTP
+ * @param {string} mensagem - Motivo
+ * @returns {Error} Erro com propriedade status
+ */
 function erroHttp(status, mensagem) {
     const erro = new Error(mensagem);
     erro.status = status;
@@ -17,10 +24,11 @@ function erroHttp(status, mensagem) {
 }
 
 /**
- * Valida e cadastra um novo cliente.
+ * Valida entrada, aplica bcrypt e força o papel cliente.
  *
- * @param {object} dados
- * @returns {Promise<object>}
+ * @param {object} dados - Nome, e-mail e senha
+ * @returns {Promise<object>} Novo cliente sem hash exposto
+ * @throws {Error} Status 400 para dados inválidos ou 409 para e-mail repetido
  */
 async function cadastrarCliente(dados) {
     if (
@@ -105,11 +113,12 @@ async function cadastrarCliente(dados) {
 }
 
 /**
- * Autentica usuario e gera token JWT.
+ * Confere hash e cria JWT com expiração.
  *
- * @param {string} email
- * @param {string} senha
- * @returns {Promise<object|null>}
+ * @param {string} email - E-mail
+ * @param {string} senha - Senha fornecida
+ * @returns {Promise<object|null>} Token e perfil ou null
+ * @throws {Error} Falha de banco ou geração de token
  */
 async function fazerLogin(email, senha) {
     const usuario = usuarios.buscarPorEmail(

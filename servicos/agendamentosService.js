@@ -255,6 +255,34 @@ function criarAgendamento(usuarioId, dados) {
     });
 }
 
+
+/**
+ * Lista as reservas que o usuario pode visualizar.
+ *
+ * @param {object} usuario
+ * @returns {object[]}
+ */
+function listarAgendamentos(usuario) {
+    if (
+        !usuario ||
+        !Number.isSafeInteger(usuario.id) ||
+        !["cliente", "admin"].includes(usuario.papel)
+    ) {
+        throw erroHttp(
+            401,
+            "Usuario nao autenticado."
+        );
+    }
+
+    return agendamentos.listarVisiveis(
+        usuario.id,
+        usuario.papel
+    );
+}
+
+
 module.exports = {
     criarAgendamento
+    ,
+    listarAgendamentos
 };

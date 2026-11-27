@@ -71,6 +71,42 @@ function criar(dados) {
     });
 
     return transacao.immediate();
+
 }
 
-module.exports = { criar };
+
+/**
+ * Lista os agendamentos permitidos ao usuario.
+ * O admin visualiza todos; o cliente, somente os seus.
+ *
+ * @param {number} usuarioId
+ * @param {string} papel
+ * @returns {object[]}
+ */
+function listarVisiveis(usuarioId, papel) {
+    const ehAdmin = papel === "admin" ? 1 : 0;
+
+    return db.prepare(`
+        SELECT
+            a.id,
+            a.usuario_id,
+            u.nome AS cliente,
+            a.servico_id,
+            s.nome AS servico,
+            a.inicio,
+            a.fim,
+            a.status
+        FROM agendamentos AS a
+        INNER JOIN usuarios AS u
+            ON u.id = a.usuario_id
+        INNER JOIN servicos AS s
+            ON s.id = a.servico_id
+        WHERE a.usuario_id = ? OR ? = 1
+        ORDER BY a.inicio ASC, a.id ASC
+    `).all(usuarioId, ehAdmin);
+}
+
+
+module.exports = { criar,
+    listarVisiveis
+ };

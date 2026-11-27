@@ -12,10 +12,33 @@ const {
 } = require("../middlewares/autenticacao");
 
 const {
-    criarAgendamento
+    criarAgendamento, 
+    listarAgendamentos
 } = require("../servicos/agendamentosService");
 
 const router = express.Router();
+
+
+// GET /api/agendamentos
+// Cliente ve somente as proprias reservas.
+// Administrador ve todas as reservas.
+router.get(
+    "/",
+    exigirAutenticacao,
+    (req, res, next) => {
+        try {
+            const reservas = listarAgendamentos(
+                req.usuario
+            );
+
+            return res.status(200).json(reservas);
+
+        } catch (erro) {
+            return next(erro);
+        }
+    }
+);
+
 
 // POST /api/agendamentos
 // O cliente precisa estar autenticado.

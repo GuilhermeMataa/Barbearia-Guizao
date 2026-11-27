@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+          content="Guizao do Corte: barbearia, estilo e agendamentos.">
+
+    <meta name="theme-color" content="#090b10">
+
+    <title>Guizao do Corte | Barbearia</title>
+
+    <!-- Estilos do frontend -->
+    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="stylesheet" href="/css/agenda-inicial.css">
+</head>
+
+<body>
+
+    <!--
+        Guizao do Corte - Página inicial.
+        Camada: frontend.
+        Apresenta os serviços e inicia o agendamento pelo site.
+    -->
+
+    <!-- ========== CABEÇALHO ========== -->
+    <header>
+
+        <h1>Guizao do Corte</h1>
+
+        <!-- Botão do menu mobile -->
+        <button
+            type="button"
+            class="botao-menu"
+            aria-label="Abrir menu"
+            aria-controls="menu-principal"
+            aria-expanded="false">
+
+            <span aria-hidden="true">☰</span>
+
+        </button>
+
+        <!-- Navegação principal -->
+        <nav id="menu-principal" aria-label="Menu principal">
+            <a href="#inicio">Início</a>
+            <a href="#sobre">Sobre</a>
+            <a href="#servicos">Serviços</a>
+            <a href="#agendamento">Agendar</a>
+            <a href="#contato">Contato</a>
+            <a href="/painel-cliente.html">Entrar</a>
+            <a href="/cadastro.html">Criar conta</a>
+            <a href="/painel-admin.html">Área do Proprietário</a>
+        </nav>
+
+    </header>
+
+    <!-- ========== CONTEÚDO PRINCIPAL ========== -->
+    <main>
+
+        <!-- APRESENTAÇÃO -->
+        <section id="inicio">
+
+            <h2>Seu estilo começa aqui!</h2>
+
+            <p>
+                Mais que um corte, uma experiência.
+                Qualidade, atitude e estilo para você.
+            </p>
+
+            <a href="#servicos">
+                Conheça nossos serviços
+            </a>
+
+        </section>
+
+        <!-- SOBRE A BARBEARIA -->
+        <section id="sobre">
+
+            <h2>Sobre a barbearia</h2>
+
+            <p>
+                A Guizao do Corte é o lugar certo
+                para quem busca um visual de respeito
+                e um atendimento de qualidade.
+            </p>
+
+        </section>
+
+        <!-- ========== CATÁLOGO DE SERVIÇOS ========== -->
+        <section id="servicos">
+
+            <h2>Nossos serviços</h2>
+
+            <p>
+                Escolha o serviço ideal para renovar
+                seu estilo.
+            </p>
+
+            <div class="grade-servicos">
+
+                <!-- CORTE MASCULINO -->
+                <article class="card-servico">
+
+                    <span
+                        class="icone-servico"
+                        aria-hidden="true">
+                        ✂️
+                    </span>
+
+                    <h3>Corte masculino</h3>
+
+                    <p>
+                        Um corte moderno e personalizado
+                        para valorizar seu estilo.
+                    </p>
+
+                    <span class="preco-servico">
+                        Valor sob consulta
+                    </span>
+
+                    <a
+                        href="#agendamento"
+                        class="botao-servico">
+                        Quero agendar
+                    </a>
+
+                </article>
+
+                <!-- BARBA -->
+                <article class="card-servico">
+
+                    <span
+                        class="icone-servico"
+                        aria-hidden="true">
+                        🪒
+                    </span>
+
+                    <h3>Barba</h3>
+
+                    <p>
+                        Cuidado e acabamento para deixar
+                        sua barba sempre alinhada.
+                    </p>
+
+                    <span class="preco-servico">
+                        Valor sob consulta
+                    </span>
+
+                    <a
+                        href="#agendamento"
+                        class="botao-servico">
+                        Quero agendar
+                    </a>
+
+                </article>
+
+                <!-- CORTE + BARBA -->
+                <article class="card-servico">
+
+                    <span
+                        class="icone-servico"
+                        aria-hidden="true">
+                        💈
+                    </span>
+
+                    <h3>Corte + Barba</h3>
+
+                    <p>
+                        Uma combinação completa para
+                        renovar seu visual.
+                    </p>
+
+                    <span class="preco-servico">
+                        Valor sob consulta
+                    </span>
+
+                    <a
+                        href="#agendamento"
+                        class="botao-servico">
+                        Quero agendar
+                    </a>
+
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- ========== AGENDAMENTO ========== -->
+        <section id="agendamento">
+
+            <div class="cabecalho-agendamento">
+
+                <span class="etiqueta">
+                    AGENDE SEU VISUAL
+                </span>
+
+                <h2>Escolha seu horário</h2>
+
+                <p>
+                    Selecione o serviço, a data e o horário
+                    de sua preferência.
+                </p>
+
+            </div>
+
+            <!-- O cliente confirma a reserva após entrar na sua conta. -->
+            <form id="form-agendamento">
+
+                <div class="grade-formulario">
+
+                    <!-- SERVIÇO ESCOLHIDO -->
+                    <div class="campo campo-grade">
+
+                        <label for="servico-agendamento">
+                            Serviço
+                        </label>
+
+                        <select
+                            id="servico-agendamento"
+                            name="servico"
+                            required>
+
+                            <option value="">
+                                Selecione o serviço
+                            </option>
+
+                            <option value="Corte masculino">
+                                Corte masculino
+                            </option>
+
+                            <option value="Barba">
+                                Barba
+                            </option>
+
+                            <option value="Corte + Barba">
+                                Corte + Barba
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- ========== DATAS EM QUADRADINHOS ========== -->
+                    <div class="campo campo-grade">
+
+                        <p
+                            id="titulo-datas"
+                            class="rotulo-grade">
+                            Escolha a data
+                        </p>
+
+                        <!--
+                            O JavaScript gera os botões de data
+                            dentro deste elemento.
+                        -->
+                        <div
+                            id="lista-datas"
+                            class="grade-opcoes"
+                            role="group"
+                            aria-labelledby="titulo-datas">
+
+                            <p class="mensagem-vazia-grade">
+                                Carregando datas...
+                            </p>
+
+                        </div>
+
+                        <!-- Guarda a data selecionada -->
+                        <input
+                            type="hidden"
+                            id="data-agendamento"
+                            name="data">
+
+                    </div>
+
+                    <!-- ========== HORÁRIOS EM QUADRADINHOS ========== -->
+                    <div class="campo campo-grade">
+
+                        <p
+                            id="titulo-horarios"
+                            class="rotulo-grade">
+                            Escolha o horário
+                        </p>
+
+                        <!--
+                            O JavaScript gera os botões
+                            dos horários aqui.
+                        -->
+                        <div
+                            id="lista-horarios"
+                            class="grade-opcoes"
+                            role="group"
+                            aria-labelledby="titulo-horarios">
+
+                            <p class="mensagem-vazia-grade">
+                                Escolha uma data para ver os horários.
+                            </p>
+
+                        </div>
+
+                        <!-- Guarda o horário selecionado -->
+                        <input
+                            type="hidden"
+                            id="horario-agendamento"
+                            name="horario">
+
+                    </div>
+
+                </div>
+                <!-- FIM DA GRADE DO FORMULÁRIO -->
+
+                <!-- Mensagens de erro e validação -->
+                <p
+                    id="mensagem-agendamento"
+                    class="mensagem-agendamento"
+                    role="status"
+                    aria-live="polite">
+                </p>
+
+                <!-- BOTÃO DE AGENDAMENTO -->
+                <button
+                    type="submit"
+                    class="botao-agendar">
+
+                    Continuar para confirmar
+
+                </button>
+
+                <!-- Informação importante -->
+                <p class="aviso-agendamento">
+                    Faça login na sua conta para confirmar seu horário.
+                    Sua reserva será registrada diretamente no sistema.
+                </p>
+
+            </form>
+
+        </section>
+
+        <!-- ========== CONTATO ========== -->
+        <section id="contato">
+
+            <h2>Entre em contato</h2>
+
+            <p>Endereço: Rua Ana Almeida, 8</p>
+
+            <p>
+                Para agendar, entre na sua conta e confirme
+                seu horário diretamente pelo site.
+            </p>
+
+            <a href="/painel-cliente.html">Acessar minha conta</a>
+
+        </section>
+
+    </main>
+
+    <!-- ========== RODAPÉ ========== -->
+    <footer>
+
+        <p>
+            Guizao do Corte — Barbearia
+        </p>
+
+        <p>
+            Todos os direitos reservados.
+        </p>
+
+    </footer>
+
+    <!-- JavaScript do frontend -->
+    <script src="js/app.js"></script>
+
+</body>
+</html>

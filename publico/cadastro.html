@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Criar Conta | Guizao do Corte</title>
+
+    <link rel="stylesheet" href="/css/estilo.css">
+    <link rel="stylesheet" href="/css/paineis.css">
+</head>
+<body>
+
+    <header class="cabecalho-painel">
+        <h1>Guizao do Corte</h1>
+
+        <nav aria-label="Navegação">
+            <a href="/index.html">Início</a>
+            <a id="link-login"
+               href="/painel-cliente.html">Entrar</a>
+        </nav>
+    </header>
+
+    <main class="pagina-painel">
+
+        <section id="secao-cadastro"
+                 class="cartao-painel">
+
+            <span class="etiqueta">SEJA BEM-VINDO</span>
+
+            <h2>Criar minha conta</h2>
+
+            <p>
+                Cadastre-se para agendar seu corte
+                diretamente pelo site.
+            </p>
+
+            <form id="form-cadastro">
+
+                <label for="cadastro-nome">
+                    Nome completo
+                </label>
+
+                <input
+                    type="text"
+                    id="cadastro-nome"
+                    autocomplete="name"
+                    minlength="2"
+                    maxlength="80"
+                    required>
+
+                <label for="cadastro-email">
+                    E-mail
+                </label>
+
+                <input
+                    type="email"
+                    id="cadastro-email"
+                    autocomplete="email"
+                    maxlength="254"
+                    required>
+
+                <label for="cadastro-senha">
+                    Senha
+                </label>
+
+                <input
+                    type="password"
+                    id="cadastro-senha"
+                    autocomplete="new-password"
+                    minlength="12"
+                    required>
+
+                <p class="aviso-cadastro">
+                    Use uma senha com pelo menos
+                    12 caracteres.
+                </p>
+
+                <label for="cadastro-confirmar">
+                    Confirmar senha
+                </label>
+
+                <input
+                    type="password"
+                    id="cadastro-confirmar"
+                    autocomplete="new-password"
+                    minlength="12"
+                    required>
+
+                <button
+                    type="submit"
+                    id="botao-cadastrar">
+                    Criar conta
+                </button>
+            </form>
+
+            <p id="mensagem-cadastro"
+               class="mensagem-painel"
+               role="status"
+               aria-live="polite"></p>
+
+            <a id="link-entrar-depois"
+               class="link-cadastro"
+               href="/painel-cliente.html"
+               hidden>
+                Entrar com minha nova conta
+            </a>
+
+            <p class="aviso-cadastro">
+                Já possui uma conta?
+                <a id="link-login-inferior"
+                   href="/painel-cliente.html">
+                    Fazer login
+                </a>
+            </p>
+
+        </section>
+
+    </main>
+
+    <script src="/js/cadastro.js"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+
+/* Guizao do Corte - Paineis de usuarios */
+
+[hidden] {
+    display: none !important;
+}
+
+.cabecalho-painel {
+    border-bottom: 1px solid #334155;
+}
+
+.pagina-painel {
+    min-height: calc(100vh - 100px);
+    padding: 55px 6%;
+    background: #090b10;
+}
+
+.cartao-painel {
+    background: #151923;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 30px;
+}
+
+#secao-login {
+    width: 100%;
+    max-width: 450px;
+    margin: 30px auto;
+}
+
+#secao-login h2,
+.topo-painel h2 {
+    color: #eab308;
+    margin: 12px 0;
+}
+
+#secao-login p,
+.topo-painel p {
+    color: #cbd5e1;
+    margin-bottom: 18px;
+}
+
+#form-login-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#form-login-admin label {
+    font-weight: bold;
+}
+
+#form-login-admin input {
+    width: 100%;
+    padding: 14px;
+
+    background: #0f131b;
+    color: #ffffff;
+
+    border: 1px solid #64748b;
+    border-radius: 9px;
+    font: inherit;
+}
+
+#form-login-admin input:focus {
+    outline: 2px solid #eab308;
+}
+
+#form-login-admin button,
+#botao-atualizar {
+    padding: 13px 20px;
+    border: none;
+    border-radius: 9px;
+
+    background: #eab308;
+    color: #090b10;
+
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#form-login-admin button {
+    margin-top: 12px;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.mensagem-painel {
+    padding: 12px 0;
+    color: #facc15;
+}
+
+.topo-painel,
+.barra-painel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.topo-painel {
+    margin-bottom: 25px;
+}
+
+.topo-painel strong {
+    color: #ffffff;
+}
+
+.botao-secundario {
+    padding: 12px 20px;
+    background: transparent;
+    border: 1px solid #eab308;
+    border-radius: 9px;
+
+    color: #eab308;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.painel-agenda h3 {
+    color: #ffffff;
+    font-size: 1.4rem;
+}
+
+#resumo-agendamentos {
+    color: #94a3b8;
+}
+
+.tabela-rolagem {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabela-agendamentos {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+.tabela-agendamentos th,
+.tabela-agendamentos td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+}
+
+.tabela-agendamentos th {
+    color: #eab308;
+    background: #0f131b;
+}
+
+.tabela-agendamentos td {
+    color: #f8fafc;
+}
+
+.status-agendamento {
+    font-weight: bold;
+}
+
+.botao-cancelar {
+    padding: 8px 12px;
+    border: 1px solid #f87171;
+    border-radius: 8px;
+
+    background: transparent;
+    color: #fca5a5;
+
+    font: inherit;
+    cursor: pointer;
+}
+
+.botao-cancelar:hover {
+    background: #7f1d1d;
+}
+
+@media (max-width: 650px) {
+    .pagina-painel {
+        padding: 30px 4%;
+    }
+
+    .cartao-painel {
+        padding: 20px;
+    }
+
+    .topo-painel {
+        align-items: flex-start;
+    }
+
+    #botao-atualizar,
+    .botao-secundario {
+        width: 100%;
+    }
+}

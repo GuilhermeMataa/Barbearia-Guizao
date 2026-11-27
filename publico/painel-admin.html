@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Painel do Proprietário | Guizao do Corte</title>
+
+    <link rel="stylesheet" href="/css/estilo.css">
+    <link rel="stylesheet" href="/css/paineis.css">
+</head>
+<body>
+
+    <header class="cabecalho-painel">
+        <h1>Guizao do Corte</h1>
+
+        <nav aria-label="Navegação">
+            <a href="/index.html">Página inicial</a>
+        </nav>
+    </header>
+
+    <main class="pagina-painel">
+
+        <!-- LOGIN DO PROPRIETARIO -->
+        <section id="secao-login" class="cartao-painel">
+            <span class="etiqueta">ACESSO RESTRITO</span>
+
+            <h2>Login do proprietário</h2>
+
+            <p>
+                Entre com suas credenciais de administrador
+                para consultar os agendamentos.
+            </p>
+
+            <form id="form-login-admin">
+                <label for="email-admin">E-mail</label>
+
+                <input
+                    type="email"
+                    id="email-admin"
+                    autocomplete="username"
+                    placeholder="seuemail@exemplo.com"
+                    required>
+
+                <label for="senha-admin">Senha</label>
+
+                <input
+                    type="password"
+                    id="senha-admin"
+                    autocomplete="current-password"
+                    required>
+
+                <button type="submit" id="botao-entrar">
+                    Entrar no painel
+                </button>
+            </form>
+
+            <p
+                id="mensagem-login"
+                class="mensagem-painel"
+                role="status"
+                aria-live="polite">
+            </p>
+        </section>
+
+        <!-- PAINEL DE AGENDAMENTOS -->
+        <section id="secao-painel" hidden>
+
+            <div class="topo-painel">
+                <div>
+                    <span class="etiqueta">
+                        ÁREA ADMINISTRATIVA
+                    </span>
+
+                    <h2>Painel do proprietário</h2>
+
+                    <p>
+                        Bem-vindo,
+                        <strong id="nome-admin"></strong>.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="botao-sair"
+                    class="botao-secundario">
+                    Sair da conta
+                </button>
+            </div>
+
+            <div class="cartao-painel painel-agenda">
+
+                <div class="barra-painel">
+                    <div>
+                        <h3>Agendamentos</h3>
+                        <p id="resumo-agendamentos"></p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="botao-atualizar">
+                        Atualizar lista
+                    </button>
+                </div>
+
+                <p
+                    id="mensagem-agendas"
+                    class="mensagem-painel"
+                    role="status"
+                    aria-live="polite">
+                </p>
+
+                <div class="tabela-rolagem">
+                    <table class="tabela-agendamentos">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Serviço</th>
+                                <th>Início</th>
+                                <th>Fim</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="corpo-agendamentos">
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script src="/js/painel-admin.js"></script>
+</body>
+</html>

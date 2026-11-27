@@ -281,8 +281,44 @@ function listarAgendamentos(usuario) {
 }
 
 
+/**
+ * Cancela uma reserva respeitando o usuario logado.
+ *
+ * @param {number} id
+ * @param {object} usuario
+ * @returns {boolean}
+ */
+function cancelarAgendamento(id, usuario) {
+    if (
+        !usuario ||
+        !Number.isSafeInteger(usuario.id) ||
+        !["cliente", "admin"].includes(usuario.papel)
+    ) {
+        throw erroHttp(
+            401,
+            "Usuario nao autenticado."
+        );
+    }
+
+    if (!Number.isSafeInteger(id) || id <= 0) {
+        throw erroHttp(
+            400,
+            "ID do agendamento invalido."
+        );
+    }
+
+    return agendamentos.cancelarVisivel(
+        id,
+        usuario.id,
+        usuario.papel
+    );
+}
+
+
 module.exports = {
     criarAgendamento
     ,
     listarAgendamentos
+    ,
+    cancelarAgendamento
 };

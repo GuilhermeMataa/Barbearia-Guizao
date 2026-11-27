@@ -107,6 +107,32 @@ function listarVisiveis(usuarioId, papel) {
 }
 
 
+/**
+ * Cancela uma reserva com verificacao de permissao.
+ * Cliente cancela somente a propria reserva.
+ * Administrador pode cancelar qualquer reserva.
+ *
+ * @param {number} id
+ * @param {number} usuarioId
+ * @param {string} papel
+ * @returns {boolean}
+ */
+function cancelarVisivel(id, usuarioId, papel) {
+    const ehAdmin = papel === "admin" ? 1 : 0;
+
+    const resultado = db.prepare(`
+        UPDATE agendamentos
+        SET status = 'cancelado'
+        WHERE id = ?
+          AND status = 'agendado'
+          AND (usuario_id = ? OR ? = 1)
+    `).run(id, usuarioId, ehAdmin);
+
+    return resultado.changes === 1;
+}
+
+
 module.exports = { criar,
-    listarVisiveis
+    listarVisiveis,
+    cancelarVisivel
  };

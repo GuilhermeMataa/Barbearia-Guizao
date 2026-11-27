@@ -9,13 +9,24 @@ const agendamentos = require("../dados/repositorioAgendamentos");
 
 const FUSO_BARBEARIA = "America/Fortaleza";
 
+/**
+ * Código HTTP e mensagem de regra.
+ *
+ * @param {number} status - Código HTTP
+ * @param {string} mensagem - Descrição do erro
+ * @returns {Error} com status definido
+ */
 function erroHttp(status, mensagem) {
     const erro = new Error(mensagem);
     erro.status = status;
     return erro;
 }
 
-/** Retorna agora na barbearia no formato YYYY-MM-DD HH:mm:ss. */
+/**
+ * Obtém data/hora no fuso do estabelecimento.
+ *
+ * @returns {string} AAAA-MM-DD HH:mm:ss
+ */
 function agoraNaBarbearia() {
     const formatador = new Intl.DateTimeFormat("en-GB", {
         timeZone: FUSO_BARBEARIA,
@@ -39,7 +50,12 @@ function agoraNaBarbearia() {
     );
 }
 
-/** Verifica se e uma data real no formato YYYY-MM-DD. */
+/**
+ * Valida uma data de calendário sem aceitar dias inexistentes.
+ *
+ * @param {unknown} data - Valor recebido
+ * @returns {boolean} Validade da data
+ */
 function dataValida(data) {
     if (typeof data !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
         return false;
@@ -53,8 +69,12 @@ function dataValida(data) {
 }
 
 /**
- * Calcula inicio/fim sem converter a hora local da barbearia.
- * Usa UTC apenas para somar a duracao em minutos.
+ * Calcula o fim de um atendimento a partir da duração.
+ *
+ * @param {string} data - Dia validado
+ * @param {string} horario - Início HH:mm
+ * @param {number} duracao - Minutos do serviço
+ * @returns {{inicio:string,fim:string}} Intervalo local
  */
 function gerarIntervalo(data, horario, duracao) {
     const [ano, mes, dia] = data.split("-").map(Number);
@@ -69,9 +89,12 @@ function gerarIntervalo(data, horario, duracao) {
 }
 
 /**
- * Lista a disponibilidade real para um servico em uma data.
- * Nao revela identidade, nome ou ID de outros clientes.
- * @returns {{data:string, servico_id:number, duracao_minutos:number, horarios:object[]}}
+ * Verifica horários sem divulgar informações pessoais.
+ *
+ * @param {string} data - Dia a consultar
+ * @param {number} servicoId - Serviço ativo
+ * @returns {object} Horários e motivos da indisponibilidade
+ * @throws {Error} Status 400/404 para entrada ou serviço inválidos
  */
 function consultarDisponibilidade(data, servicoId) {
     if (!dataValida(data)) {
@@ -123,7 +146,14 @@ function consultarDisponibilidade(data, servicoId) {
     };
 }
 
-/** Valida e cria reserva para o usuario logado. */
+/**
+ * Verifica expediente e conflito, delegando a gravação atômica.
+ *
+ * @param {number} usuarioId - ID retirado do JWT
+ * @param {object} dados - Serviço, dia e horário recebidos
+ * @returns {object} Agendamento persistido
+ * @throws {Error} Status 400/401/404/409 conforme validação
+ */
 function criarAgendamento(usuarioId, dados) {
     if (!Number.isSafeInteger(usuarioId) || usuarioId <= 0) {
         throw erroHttp(401, "Usuario invalido.");
@@ -184,7 +214,13 @@ function criarAgendamento(usuarioId, dados) {
     });
 }
 
-/** Admin ve todos; cliente apenas os seus. */
+/**
+ * Lista somente dados autorizados ao papel.
+ *
+ * @param {object} usuario - ID e papel autenticados
+ * @returns {object[]} Reservas permitidas
+ * @throws {Error} Status 401 sem autenticação
+ */
 function listarAgendamentos(usuario) {
     if (
         !usuario ||
@@ -197,7 +233,14 @@ function listarAgendamentos(usuario) {
     return agendamentos.listarVisiveis(usuario.id, usuario.papel);
 }
 
-/** Cancela somente a propria reserva (ou qualquer uma, se admin). */
+/**
+ * Cancela com verificação de titularidade no repositório.
+ *
+ * @param {number} id - ID da reserva
+ * @param {object} usuario - ID e papel autenticados
+ * @returns {boolean} Indica sucesso
+ * @throws {Error} Status 400/401 para entrada ou sessão inválidas
+ */
 function cancelarAgendamento(id, usuario) {
     if (
         !usuario ||

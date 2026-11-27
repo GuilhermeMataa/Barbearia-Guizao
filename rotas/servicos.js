@@ -111,4 +111,100 @@ router.get("/:id", (req, res, next) => {
     }
 });
 
+// ==========================================
+// DELETE /api/servicos/:id
+// Somente administradores.
+// Realiza exclusao logica.
+// ==========================================
+router.delete(
+    "/:id",
+    exigirAutenticacao,
+    exigirAdmin,
+    (req, res, next) => {
+        try {
+            const idTexto = req.params.id;
+
+            if (!/^[1-9]\d*$/.test(idTexto)) {
+                return res.status(400).json({
+                    erro: "ID do servico invalido."
+                });
+            }
+
+            const id = Number(idTexto);
+
+            if (!Number.isSafeInteger(id)) {
+                return res.status(400).json({
+                    erro: "ID do servico invalido."
+                });
+            }
+
+            const desativado =
+                servicosService.desativarServico(id);
+
+            if (!desativado) {
+                return res.status(404).json({
+                    erro: "Servico nao encontrado."
+                });
+            }
+
+            // HTTP 204 nao retorna conteudo.
+            return res.status(204).send();
+
+        } catch (erro) {
+            return next(erro);
+        }
+    }
+);
+
+
+// PUT /api/servicos/:id
+// Somente administradores podem editar.
+router.put(
+    "/:id",
+    exigirAutenticacao,
+    exigirAdmin,
+    (req, res, next) => {
+        try {
+            const idTexto = req.params.id;
+
+            if (!/^[1-9]\d*$/.test(idTexto)) {
+                return res.status(400).json({
+                    erro: "ID invalido."
+                });
+            }
+
+            const id = Number(idTexto);
+
+            if (!Number.isSafeInteger(id)) {
+                return res.status(400).json({
+                    erro: "ID invalido."
+                });
+            }
+
+            const atualizado =
+                servicosService.atualizarServico(
+                    id,
+                    req.body
+                );
+
+            if (!atualizado) {
+                return res.status(404).json({
+                    erro: "Servico nao encontrado."
+                });
+            }
+
+            return res.status(200).json(atualizado);
+
+        } catch (erro) {
+            if (erro.status === 400 || erro.status === 409) {
+                return res.status(erro.status).json({
+                    erro: erro.message
+                });
+            }
+
+            return next(erro);
+        }
+    }
+);
+
 module.exports = router;

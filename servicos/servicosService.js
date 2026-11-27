@@ -156,8 +156,50 @@ function cadastrarServico(dados) {
     }
 }
 
+/**
+ * Desativa um servico cadastrado.
+ *
+ * @param {number} id - ID do servico.
+ * @returns {boolean} true se foi desativado.
+ */
+function desativarServico(id) {
+    return repositorio.desativar(id);
+}
+
+
+/**
+ * Valida e atualiza um servico.
+ *
+ * @param {number} id
+ * @param {object} dados
+ * @returns {object|undefined}
+ */
+function atualizarServico(id, dados) {
+    const dadosValidados = validarNovoServico(dados);
+
+    try {
+        return repositorio.atualizar(
+            id,
+            dadosValidados
+        );
+
+    } catch (erro) {
+        if (erro.code === "SQLITE_CONSTRAINT_UNIQUE") {
+            throw erroHttp(
+                409,
+                "Ja existe um servico com esse nome."
+            );
+        }
+
+        throw erro;
+    }
+}
+
+
 module.exports = {
     listarServicos,
     buscarServico,
-    cadastrarServico
+    cadastrarServico,
+    atualizarServico,
+    desativarServico
 };

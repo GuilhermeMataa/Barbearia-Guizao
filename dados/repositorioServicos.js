@@ -75,8 +75,61 @@ function cadastrar(dados) {
     return buscarAtivoPorId(id);
 }
 
+
+/**
+ * Desativa um servico sem apagar seu historico.
+ *
+ * @param {number} id - ID do servico.
+ * @returns {boolean} true se foi desativado.
+ */
+function desativar(id) {
+    const resultado = db.prepare(`
+        UPDATE servicos
+        SET ativo = 0
+        WHERE id = ?
+          AND ativo = 1
+    `).run(id);
+
+    return resultado.changes === 1;
+}
+
+
+/**
+ * Atualiza um servico ativo no SQLite.
+ *
+ * @param {number} id
+ * @param {object} dados
+ * @returns {object|undefined}
+ */
+function atualizar(id, dados) {
+    const resultado = db.prepare(`
+        UPDATE servicos
+        SET nome = ?,
+            descricao = ?,
+            duracao_minutos = ?,
+            preco_centavos = ?
+        WHERE id = ?
+          AND ativo = 1
+    `).run(
+        dados.nome,
+        dados.descricao,
+        dados.duracao_minutos,
+        dados.preco_centavos,
+        id
+    );
+
+    if (resultado.changes === 0) {
+        return undefined;
+    }
+
+    return buscarAtivoPorId(id);
+}
+
+
 module.exports = {
     listarAtivos,
     buscarAtivoPorId,
-    cadastrar
+    cadastrar,
+    atualizar,
+    desativar
 };

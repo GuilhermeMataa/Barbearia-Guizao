@@ -1,107 +1,72 @@
-
 /**
- * Guizao do Corte - Funcionalidades do frontend.
- * Controla o menu mobile, as datas e os horários.
- * Envia solicitações de agendamento pelo WhatsApp.
+ * Guizao do Corte - Pagina inicial.
+ * Exibe disponibilidade real sem divulgar dados pessoais.
+ * O cliente confirma a reserva apos login, no painel-cliente.html.
  */
-
 "use strict";
 
-const telefoneBarbearia = "5588981315016";
-
-/**
- * Configura a abertura e o fechamento do menu mobile.
- */
+/** Menu responsivo existente. */
 function configurarMenuMobile() {
     const botao = document.querySelector(".botao-menu");
     const cabecalho = document.querySelector("header");
     const menu = document.querySelector("#menu-principal");
-
-    if (!botao || !cabecalho || !menu) {
-        return;
-    }
+    if (!botao || !cabecalho || !menu) return;
 
     document.documentElement.classList.add("js");
 
     function definirMenu(aberto) {
         cabecalho.classList.toggle("menu-aberto", aberto);
-
         botao.setAttribute("aria-expanded", String(aberto));
-        botao.setAttribute(
-            "aria-label",
-            aberto ? "Fechar menu" : "Abrir menu"
-        );
+        botao.setAttribute("aria-label", aberto ? "Fechar menu" : "Abrir menu");
     }
 
     botao.addEventListener("click", () => {
-        const aberto = cabecalho.classList.contains("menu-aberto");
-        definirMenu(!aberto);
+        definirMenu(!cabecalho.classList.contains("menu-aberto"));
     });
-
     menu.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", () => definirMenu(false));
     });
-
     document.addEventListener("keydown", (evento) => {
-        if (evento.key === "Escape") {
-            definirMenu(false);
-        }
+        if (evento.key === "Escape") definirMenu(false);
     });
-
     window.addEventListener("resize", () => {
-        if (window.innerWidth > 768) {
-            definirMenu(false);
-        }
+        if (window.innerWidth > 768) definirMenu(false);
     });
 }
 
-/**
- * Formata uma data local para AAAA-MM-DD.
- * Evita diferenças de fuso horário causadas por UTC.
- * @param {Date} data
- * @returns {string}
- */
-function formatarDataISO(data) {
-    const ano = data.getFullYear();
-    const mes = String(data.getMonth() + 1).padStart(2, "0");
-    const dia = String(data.getDate()).padStart(2, "0");
-
-    return `${ano}-${mes}-${dia}`;
+/** Data e hora local da barbearia, mesmo que o celular esteja em outro fuso. */
+function agoraFortaleza() {
+    const formatador = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "America/Fortaleza",
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    });
+    const partes = Object.fromEntries(
+        formatador.formatToParts(new Date()).map((parte) => [parte.type, parte.value])
+    );
+    return {
+        data: `${partes.year}-${partes.month}-${partes.day}`,
+        minutos: Number(partes.hour) * 60 + Number(partes.minute)
+    };
 }
 
-/**
- * Cria um quadradinho acessível para data ou horário.
- * Usa textContent para inserir os textos com segurança.
- * @param {string[]} linhas
- * @returns {HTMLButtonElement}
- */
+/** Cria botao acessivel sem interpretar conteudo como HTML. */
 function criarQuadradinho(linhas) {
     const botao = document.createElement("button");
     botao.type = "button";
     botao.className = "opcao-grade";
     botao.setAttribute("aria-pressed", "false");
 
-    const classes = [
-        "linha-superior",
-        "linha-principal",
-        "linha-inferior"
-    ];
-
+    const classes = ["linha-superior", "linha-principal", "linha-inferior"];
     linhas.forEach((texto, indice) => {
         const span = document.createElement("span");
         span.className = classes[indice];
         span.textContent = texto;
         botao.appendChild(span);
     });
-
     return botao;
 }
 
-/**
- * Marca apenas uma opção como selecionada.
- * @param {HTMLElement} grade
- * @param {HTMLButtonElement} selecionado
- */
 function selecionarQuadradinho(grade, selecionado) {
     grade.querySelectorAll(".opcao-grade").forEach((botao) => {
         const ativo = botao === selecionado;
@@ -110,227 +75,252 @@ function selecionarQuadradinho(grade, selecionado) {
     });
 }
 
-/**
- * Apresenta um aviso dentro de uma grade.
- * @param {HTMLElement} grade
- * @param {string} texto
- */
-function mostrarAviso(grade, texto) {
-    const aviso = document.createElement("p");
-    aviso.className = "mensagem-vazia-grade";
-    aviso.textContent = texto;
-
-    grade.replaceChildren(aviso);
+function mostrarAviso(grade, mensagem) {
+    const p = document.createElement("p");
+    p.className = "mensagem-vazia-grade";
+    p.textContent = mensagem;
+    grade.replaceChildren(p);
 }
 
 /**
- * Configura a seleção de datas e horários.
- *
- * Os horários são sugestões, não vagas confirmadas.
- * A disponibilidade real será verificada pela API.
+ * Carrega servicos e disponibilidades em tempo real.
+ * Horarios que se sobrepoem a uma reserva ativa ficam desabilitados.
  */
 function configurarFormularioAgendamento() {
     const form = document.querySelector("#form-agendamento");
-    const nome = document.querySelector("#nome-cliente");
-    const servico = document.querySelector("#servico-agendamento");
-    const data = document.querySelector("#data-agendamento");
-    const horario = document.querySelector("#horario-agendamento");
-
-    const listaDatas = document.querySelector("#lista-datas");
-    const listaHorarios = document.querySelector("#lista-horarios");
+    const campoServico = document.querySelector("#servico-agendamento");
+    const campoData = document.querySelector("#data-agendamento");
+    const campoHorario = document.querySelector("#horario-agendamento");
+    const gradeDatas = document.querySelector("#lista-datas");
+    const gradeHorarios = document.querySelector("#lista-horarios");
     const mensagem = document.querySelector("#mensagem-agendamento");
 
-    if (
-        !form || !nome || !servico || !data || !horario ||
-        !listaDatas || !listaHorarios || !mensagem
-    ) {
-        console.error("Elementos do formulário não encontrados.");
+    if (!form || !campoServico || !campoData || !campoHorario ||
+        !gradeDatas || !gradeHorarios || !mensagem) {
+        console.error("Formulario de agendamento incompleto.");
         return;
     }
 
-    const diasSemana = [
-        "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"
-    ];
+    const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+        "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    let servicos = [];
+    let horarios = [];
+    let sequenciaConsulta = 0;
+    let atualizacaoPendente = false;
 
-    const meses = [
-        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-        "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-    ];
+    function servicoAtual() {
+        return servicos.find((s) => s.id === Number(campoServico.value));
+    }
 
-    /**
-     * Gera horários de exemplo das 09h às 17h30.
-     * Considera o horário local ao esconder horários passados.
-     * @param {string} dataSelecionada
-     */
-    function gerarHorarios(dataSelecionada) {
-        listaHorarios.replaceChildren();
-        horario.value = "";
+    function limparSelecaoHorario() {
+        campoHorario.value = "";
+        horarios = [];
+    }
 
-        const agora = new Date();
-        const hojeISO = formatarDataISO(agora);
-        let quantidade = 0;
-
-        for (let minutos = 540; minutos < 1080; minutos += 30) {
-            const horas = Math.floor(minutos / 60);
-            const mins = minutos % 60;
-
-            const textoHorario =
-                `${String(horas).padStart(2, "0")}:` +
-                `${String(mins).padStart(2, "0")}`;
-
-            // Não oferece horários já passados no dia atual.
-            if (dataSelecionada === hojeISO) {
-                const minutosAtuais =
-                    agora.getHours() * 60 + agora.getMinutes();
-
-                if (minutos <= minutosAtuais) {
-                    continue;
-                }
-            }
-
-            const botao = criarQuadradinho([
-                "Horário",
-                textoHorario,
-                "Selecionar"
-            ]);
-
-            botao.addEventListener("click", () => {
-                selecionarQuadradinho(listaHorarios, botao);
-                horario.value = textoHorario;
-                mensagem.textContent = "";
-            });
-
-            listaHorarios.appendChild(botao);
-            quantidade++;
+    /** Busca somente o estado livre/ocupado, sem obter nomes de clientes. */
+    async function atualizarDisponibilidade() {
+        const sequencia = ++sequenciaConsulta;
+        limparSelecaoHorario();
+        const servico = servicoAtual();
+        if (!servico || !campoData.value) {
+            mostrarAviso(gradeHorarios, "Escolha um serviço e um dia.");
+            return;
         }
 
-        if (quantidade === 0) {
-            mostrarAviso(
-                listaHorarios,
-                "Não há mais horários sugeridos para hoje."
+        atualizacaoPendente = true;
+        mostrarAviso(gradeHorarios, "Consultando horários livres e ocupados...");
+        mensagem.textContent = "";
+
+        try {
+            const parametros = new URLSearchParams({
+                data: campoData.value,
+                servico_id: String(servico.id)
+            });
+            const resposta = await fetch(
+                `/api/agendamentos/disponibilidade?${parametros.toString()}`,
+                { cache: "no-store" }
             );
+            const dados = await resposta.json();
+            if (!resposta.ok) {
+                throw new Error(dados.erro || `Erro HTTP ${resposta.status}`);
+            }
+            if (!Array.isArray(dados.horarios)) {
+                throw new Error("A API retornou uma lista de horários inválida.");
+            }
+            if (sequencia !== sequenciaConsulta) return;
+
+            horarios = dados.horarios;
+            gradeHorarios.replaceChildren();
+
+            for (const item of horarios) {
+                const status = item.disponivel ? "Livre" :
+                    item.motivo === "ocupado" ? "Ocupado" :
+                    item.motivo === "passado" ? "Passou" : "Fechado";
+
+                const botao = criarQuadradinho([
+                    "Horário", item.horario, status
+                ]);
+                botao.classList.add(item.disponivel ? "livre" : "indisponivel");
+                if (!item.disponivel && item.motivo === "ocupado") {
+                    botao.classList.add("ocupado");
+                }
+                botao.disabled = !item.disponivel;
+                botao.title = `${item.horario} — ${status}`;
+
+                if (item.disponivel) {
+                    botao.addEventListener("click", () => {
+                        selecionarQuadradinho(gradeHorarios, botao);
+                        campoHorario.value = item.horario;
+                        mensagem.textContent = "";
+                    });
+                }
+                gradeHorarios.appendChild(botao);
+            }
+        } catch (erro) {
+            if (sequencia !== sequenciaConsulta) return;
+            mostrarAviso(gradeHorarios, "Não foi possível consultar a disponibilidade.");
+            mensagem.textContent = `${erro.message} Atualize a página e tente novamente.`;
+        } finally {
+            if (sequencia === sequenciaConsulta) atualizacaoPendente = false;
         }
     }
 
-    /**
-     * Gera os próximos sete dias em formato de quadradinhos.
-     */
     function gerarDatas() {
-        listaDatas.replaceChildren();
+        gradeDatas.replaceChildren();
+        const hoje = agoraFortaleza().data;
+        const base = new Date(`${hoje}T00:00:00Z`);
+        const duracao = servicoAtual()?.duracao_minutos || 30;
+        const agora = agoraFortaleza();
+        const proximoSlot = Math.ceil((agora.minutos + 1) / 30) * 30;
+        const inicioAutomatico = proximoSlot + duracao > 1080 ? 1 : 0;
+        let botaoInicial = null;
 
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-
-        for (let i = 0; i < 7; i++) {
-            const diaAtual = new Date(hoje);
-            diaAtual.setDate(hoje.getDate() + i);
-
-            const valorISO = formatarDataISO(diaAtual);
-
+        for (let i = 0; i < 14; i++) {
+            const dia = new Date(base.getTime() + i * 86400000);
+            const iso = dia.toISOString().slice(0, 10);
             const botao = criarQuadradinho([
-                i === 0 ? "Hoje" : diasSemana[diaAtual.getDay()],
-                String(diaAtual.getDate()).padStart(2, "0"),
-                meses[diaAtual.getMonth()]
+                i === 0 ? "Hoje" : diasSemana[dia.getUTCDay()],
+                String(dia.getUTCDate()).padStart(2, "0"),
+                meses[dia.getUTCMonth()]
             ]);
-
+            botao.title = iso;
             botao.addEventListener("click", () => {
-                selecionarQuadradinho(listaDatas, botao);
-
-                data.value = valorISO;
-                mensagem.textContent = "";
-
-                gerarHorarios(valorISO);
+                selecionarQuadradinho(gradeDatas, botao);
+                campoData.value = iso;
+                atualizarDisponibilidade();
             });
+            gradeDatas.appendChild(botao);
+            if (i === inicioAutomatico) botaoInicial = botao;
+        }
+        botaoInicial?.click();
+    }
 
-            listaDatas.appendChild(botao);
+    async function carregarServicos() {
+        try {
+            const resposta = await fetch("/api/servicos", { cache: "no-store" });
+            const dados = await resposta.json();
+            if (!resposta.ok || !Array.isArray(dados)) {
+                throw new Error(dados.erro || "Erro ao carregar serviços.");
+            }
+            servicos = dados;
+            campoServico.replaceChildren();
+            campoServico.appendChild(new Option("Selecione o serviço", ""));
+            for (const servico of servicos) {
+                const preco = (servico.preco_centavos / 100)
+                    .toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+                campoServico.appendChild(new Option(`${servico.nome} — ${preco}`, String(servico.id)));
+            }
+            if (!servicos.length) {
+                mostrarAviso(gradeHorarios, "Nenhum serviço disponível.");
+                mensagem.textContent = "Nenhum serviço cadastrado no momento.";
+                return;
+            }
+            // O primeiro servico ativo e selecionado para a grade ja mostrar estados.
+            campoServico.value = String(servicos[0].id);
+            gerarDatas();
+
+            document.querySelectorAll(".card-servico").forEach((cartao) => {
+                const nome = cartao.querySelector("h3")?.textContent.trim();
+                const servico = servicos.find((s) => s.nome === nome);
+                if (!servico) return;
+                const precoTag = cartao.querySelector(".preco-servico");
+                if (precoTag) {
+                    precoTag.textContent = (servico.preco_centavos / 100)
+                        .toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+                }
+            });
+        } catch (erro) {
+            campoServico.replaceChildren(new Option("Falha ao carregar serviços", ""));
+            mostrarAviso(gradeHorarios, "Não foi possível carregar os serviços.");
+            mensagem.textContent = erro.message;
         }
     }
 
-    // Ao clicar em um card, seleciona seu serviço.
-    document.querySelectorAll(".botao-servico").forEach((botao) => {
-        botao.href = "#agendamento";
-        botao.removeAttribute("target");
-        botao.removeAttribute("rel");
+    campoServico.addEventListener("change", () => {
+        limparSelecaoHorario();
+        gerarDatas();
+    });
 
-        botao.addEventListener("click", () => {
-            const cartao = botao.closest(".card-servico");
-            const titulo = cartao?.querySelector("h3");
-
-            if (titulo) {
-                servico.value = titulo.textContent.trim();
+    document.querySelectorAll(".botao-servico").forEach((link) => {
+        link.href = "#agendamento";
+        link.removeAttribute("target");
+        link.removeAttribute("rel");
+        link.addEventListener("click", () => {
+            const nome = link.closest(".card-servico")?.querySelector("h3")?.textContent.trim();
+            const encontrado = servicos.find((servico) => servico.nome === nome);
+            if (encontrado) {
+                campoServico.value = String(encontrado.id);
+                gerarDatas();
             }
         });
     });
 
-    // Valida a seleção antes de abrir o WhatsApp.
-    form.addEventListener("submit", (evento) => {
+    // A selecao e uma sugestao. A confirmacao definitiva e autenticada via POST.
+    form.addEventListener("submit", async (evento) => {
         evento.preventDefault();
-        mensagem.textContent = "";
-
-        if (!form.reportValidity()) {
+        if (!form.reportValidity()) return;
+        const escolhido = servicoAtual();
+        if (!escolhido || !campoData.value || !campoHorario.value) {
+            mensagem.textContent = "Escolha serviço, dia e um horário Livre.";
             return;
         }
-
-        if (!nome.value.trim()) {
-            mensagem.textContent = "Informe seu nome.";
+        if (atualizacaoPendente || !horarios.some((h) =>
+            h.horario === campoHorario.value && h.disponivel)) {
+            mensagem.textContent = "Esse horário não está disponível. Escolha outro.";
+            await atualizarDisponibilidade();
             return;
         }
-
-        if (!data.value) {
-            mensagem.textContent = "Selecione uma data.";
+        // Segunda consulta antes de navegar, evitando seguir com uma vaga desatualizada.
+        const escolhidoHorario = campoHorario.value;
+        await atualizarDisponibilidade();
+        const aindaLivre = horarios.some((h) => h.horario === escolhidoHorario && h.disponivel);
+        if (!aindaLivre || atualizacaoPendente) {
+            mensagem.textContent = "O horário foi ocupado. Escolha outro.";
             return;
         }
-
-        if (!horario.value) {
-            mensagem.textContent = "Selecione um horário.";
-            return;
-        }
-
-        const [ano, mes, dia] = data.value.split("-").map(Number);
-        const [hora, minuto] = horario.value.split(":").map(Number);
-
-        const dataEscolhida = new Date(
-            ano, mes - 1, dia, hora, minuto
-        );
-
-        if (dataEscolhida <= new Date()) {
-            mensagem.textContent =
-                "Esse horário já passou. Escolha outro.";
-            gerarHorarios(data.value);
-            return;
-        }
-
-        const dataFormatada =
-            `${String(dia).padStart(2, "0")}/` +
-            `${String(mes).padStart(2, "0")}/${ano}`;
-
-        const texto =
-            `Olá! Meu nome é ${nome.value.trim()}.\n` +
-            `Gostaria de solicitar um agendamento na Guizao do Corte.\n\n` +
-            `Serviço: ${servico.value}\n` +
-            `Data: ${dataFormatada}\n` +
-            `Horário: ${horario.value}\n\n` +
-            `Esse horário está disponível?`;
-
-        const url =
-            `https://wa.me/${telefoneBarbearia}?text=` +
-            encodeURIComponent(texto);
-
-        window.location.assign(url);
+        const parametros = new URLSearchParams({
+            servico: escolhido.nome,
+            data: campoData.value,
+            horario: escolhidoHorario
+        });
+        window.location.assign(`/painel-cliente.html?${parametros.toString()}`);
     });
 
-    // Inicializa o calendário assim que a página carrega.
-    gerarDatas();
+    // Quando a pessoa retorna ao site, mostra disponibilidade atualizada.
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && servicoAtual()) atualizarDisponibilidade();
+    });
+    window.addEventListener("focus", () => {
+        if (document.visibilityState === "visible" && servicoAtual()) {
+            atualizarDisponibilidade();
+        }
+    });
 
-    mostrarAviso(
-        listaHorarios,
-        "Escolha uma data para visualizar os horários."
-    );
+    mostrarAviso(gradeHorarios, "Carregando disponibilidade...");
+    carregarServicos();
 }
 
-/**
- * Inicializa as funcionalidades após carregar o HTML.
- */
 document.addEventListener("DOMContentLoaded", () => {
     configurarMenuMobile();
     configurarFormularioAgendamento();

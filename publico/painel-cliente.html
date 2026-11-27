@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Agende seu horario na Guizao do Corte.">
+    <title>Area do Cliente | Guizao do Corte</title>
+    <link rel="stylesheet" href="/css/estilo.css">
+    <link rel="stylesheet" href="/css/paineis.css">
+    <link rel="stylesheet" href="/css/agenda-cliente.css">
+</head>
+<body>
+    <header class="cabecalho-painel">
+        <h1>Guizao do Corte</h1>
+        <nav aria-label="Navegacao">
+            <a href="/index.html">Pagina inicial</a>
+            <a href="/painel-admin.html">Proprietario</a>
+        </nav>
+    </header>
+
+    <main class="pagina-painel">
+        <!-- Formulario de entrada -->
+        <section id="secao-login-cliente" class="cartao-painel">
+            <span class="etiqueta">AREA DO CLIENTE</span>
+            <h2>Entre na sua conta</h2>
+            <p>Acesse sua agenda e confirme seu horario pelo site.</p>
+
+            <form id="form-login-cliente">
+                <label for="email-cliente">E-mail</label>
+                <input type="email" id="email-cliente" autocomplete="username" required>
+
+                <label for="senha-cliente">Senha</label>
+                <input type="password" id="senha-cliente" autocomplete="current-password" required>
+
+                <button type="submit" id="botao-login-cliente">Entrar</button>
+            </form>
+
+            <p id="mensagem-login-cliente" class="mensagem-painel"
+               role="status" aria-live="polite"></p>
+
+            <p class="cadastro-aviso">
+                Ainda nao tem conta?
+                <a id="link-criar-conta" href="/cadastro.html">Criar conta gratis</a>
+            </p>
+        </section>
+
+        <!-- Aparece depois do login -->
+        <div id="secao-area-cliente" hidden>
+            <div class="topo-painel">
+                <div>
+                    <span class="etiqueta">MINHA AGENDA</span>
+                    <h2>Escolha seu horario</h2>
+                    <p>Bem-vindo, <strong id="nome-cliente-logado"></strong>!</p>
+                </div>
+                <button type="button" id="botao-sair-cliente" class="botao-secundario">
+                    Sair da conta
+                </button>
+            </div>
+
+            <section class="cartao-painel" id="secao-agendar">
+                <h3>Fazer agendamento</h3>
+                <p>Escolha o servico, o dia e um horario livre.</p>
+
+                <form id="form-reserva-cliente">
+                    <div class="campo-agenda">
+                        <label for="servico-cliente">1. Qual servico?</label>
+                        <select id="servico-cliente" required>
+                            <option value="">Carregando servicos...</option>
+                        </select>
+                    </div>
+
+                    <div class="campo-agenda">
+                        <p class="rotulo-grade" id="rotulo-dias">2. Escolha o dia</p>
+                        <div id="dias-cliente" class="grade-opcoes grade-dias-cliente"
+                             role="group" aria-labelledby="rotulo-dias">
+                            <p class="mensagem-vazia-grade">Carregando datas...</p>
+                        </div>
+                        <input type="hidden" id="data-cliente">
+                    </div>
+
+                    <div class="campo-agenda">
+                        <p class="rotulo-grade" id="rotulo-horarios">3. Escolha o horario</p>
+                        <p class="legenda-disponibilidade">
+                            <span class="bolinha-livre" aria-hidden="true"></span> Livre
+                            <span class="bolinha-ocupado" aria-hidden="true"></span> Ocupado
+                        </p>
+                        <div id="horarios-cliente" class="grade-opcoes grade-horarios-cliente"
+                             role="group" aria-labelledby="rotulo-horarios">
+                            <p class="mensagem-vazia-grade">Escolha um servico e um dia.</p>
+                        </div>
+                        <input type="hidden" id="horario-cliente">
+                        <button type="button" id="botao-atualizar-horarios"
+                                class="botao-secundario botao-atualizar-horarios">
+                            Atualizar horários
+                        </button>
+                    </div>
+
+                    <p id="mensagem-reserva-cliente" class="mensagem-painel"
+                       role="status" aria-live="polite"></p>
+
+                    <button type="submit" id="botao-confirmar-cliente"
+                            class="botao-primario-cliente" disabled>
+                        Confirmar agendamento
+                    </button>
+                    <p class="aviso-agenda">
+                        A reserva so sera confirmada depois que o sistema salvar
+                        o horario no banco de dados.
+                    </p>
+                </form>
+
+                <div id="confirmacao-cliente" class="confirmacao-cliente"
+                     role="status" aria-live="polite" hidden>
+                    <h3>Agendamento confirmado!</h3>
+                    <p id="detalhes-confirmacao"></p>
+                </div>
+            </section>
+
+            <section class="cartao-painel" id="secao-minhas-reservas">
+                <div class="barra-painel">
+                    <h3>Meus agendamentos</h3>
+                    <button type="button" id="botao-atualizar-cliente"
+                            class="botao-primario-cliente">
+                        Atualizar lista
+                    </button>
+                </div>
+                <p id="mensagem-lista-cliente" class="mensagem-painel"
+                   role="status" aria-live="polite"></p>
+                <ul id="lista-reservas-cliente" class="lista-reservas-cliente"></ul>
+            </section>
+        </div>
+    </main>
+
+    <script src="/js/painel-cliente.js"></script>
+</body>
+</html>

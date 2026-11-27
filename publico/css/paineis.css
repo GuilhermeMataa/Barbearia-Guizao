@@ -1,0 +1,428 @@
+
+/* Guizao do Corte - Paineis de usuarios */
+
+[hidden] {
+    display: none !important;
+}
+
+.cabecalho-painel {
+    border-bottom: 1px solid #334155;
+}
+
+.pagina-painel {
+    min-height: calc(100vh - 100px);
+    padding: 55px 6%;
+    background: #090b10;
+}
+
+.cartao-painel {
+    background: #151923;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 30px;
+}
+
+#secao-login {
+    width: 100%;
+    max-width: 450px;
+    margin: 30px auto;
+}
+
+#secao-login h2,
+.topo-painel h2 {
+    color: #eab308;
+    margin: 12px 0;
+}
+
+#secao-login p,
+.topo-painel p {
+    color: #cbd5e1;
+    margin-bottom: 18px;
+}
+
+#form-login-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#form-login-admin label {
+    font-weight: bold;
+}
+
+#form-login-admin input {
+    width: 100%;
+    padding: 14px;
+
+    background: #0f131b;
+    color: #ffffff;
+
+    border: 1px solid #64748b;
+    border-radius: 9px;
+    font: inherit;
+}
+
+#form-login-admin input:focus {
+    outline: 2px solid #eab308;
+}
+
+#form-login-admin button,
+#botao-atualizar {
+    padding: 13px 20px;
+    border: none;
+    border-radius: 9px;
+
+    background: #eab308;
+    color: #090b10;
+
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#form-login-admin button {
+    margin-top: 12px;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.mensagem-painel {
+    padding: 12px 0;
+    color: #facc15;
+}
+
+.topo-painel,
+.barra-painel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.topo-painel {
+    margin-bottom: 25px;
+}
+
+.topo-painel strong {
+    color: #ffffff;
+}
+
+.botao-secundario {
+    padding: 12px 20px;
+    background: transparent;
+    border: 1px solid #eab308;
+    border-radius: 9px;
+
+    color: #eab308;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.painel-agenda h3 {
+    color: #ffffff;
+    font-size: 1.4rem;
+}
+
+#resumo-agendamentos {
+    color: #94a3b8;
+}
+
+.tabela-rolagem {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabela-agendamentos {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+.tabela-agendamentos th,
+.tabela-agendamentos td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #334155;
+    text-align: left;
+}
+
+.tabela-agendamentos th {
+    color: #eab308;
+    background: #0f131b;
+}
+
+.tabela-agendamentos td {
+    color: #f8fafc;
+}
+
+.status-agendamento {
+    font-weight: bold;
+}
+
+.botao-cancelar {
+    padding: 8px 12px;
+    border: 1px solid #f87171;
+    border-radius: 8px;
+
+    background: transparent;
+    color: #fca5a5;
+
+    font: inherit;
+    cursor: pointer;
+}
+
+.botao-cancelar:hover {
+    background: #7f1d1d;
+}
+
+@media (max-width: 650px) {
+    .pagina-painel {
+        padding: 30px 4%;
+    }
+
+    .cartao-painel {
+        padding: 20px;
+    }
+
+    .topo-painel {
+        align-items: flex-start;
+    }
+
+    #botao-atualizar,
+    .botao-secundario {
+        width: 100%;
+    }
+}
+
+
+/* ==========================================
+   GUIZAO DO CORTE - AREA DO CLIENTE
+   ========================================== */
+
+#secao-login-cliente {
+    max-width: 450px;
+    margin: 30px auto;
+}
+
+#secao-login-cliente h2,
+#secao-area-cliente h2,
+#secao-area-cliente h3 {
+    color: #eab308;
+    margin: 12px 0;
+}
+
+#secao-login-cliente p,
+#secao-area-cliente p {
+    color: #cbd5e1;
+    margin-bottom: 14px;
+}
+
+#form-login-cliente,
+.formulario-cliente {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#form-login-cliente label,
+.formulario-cliente label {
+    color: #f8fafc;
+    font-weight: bold;
+}
+
+#form-login-cliente input,
+.formulario-cliente input,
+.formulario-cliente select {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #64748b;
+    border-radius: 9px;
+    background: #0f131b;
+    color: #ffffff;
+    font: inherit;
+}
+
+#form-login-cliente input:focus,
+.formulario-cliente input:focus,
+.formulario-cliente select:focus {
+    outline: 2px solid #eab308;
+    outline-offset: 2px;
+}
+
+#form-login-cliente button,
+#botao-confirmar-cliente,
+#botao-atualizar-cliente {
+    padding: 14px 18px;
+    background: #eab308;
+    color: #090b10;
+    border: none;
+    border-radius: 9px;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#form-login-cliente button,
+#botao-confirmar-cliente {
+    margin-top: 12px;
+}
+
+#secao-area-cliente > .cartao-painel {
+    margin-bottom: 25px;
+}
+
+.aviso-cliente {
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.confirmacao-cliente {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #eab308;
+    border-radius: 12px;
+    background: #202111;
+}
+
+.confirmacao-cliente h3 {
+    color: #facc15;
+}
+
+.lista-reservas-cliente {
+    list-style: none;
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.item-reserva-cliente {
+    padding: 22px;
+    background: #0f131b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+}
+
+.item-reserva-cliente h4 {
+    color: #eab308;
+    margin-bottom: 14px;
+    font-size: 1.15rem;
+}
+
+.item-reserva-cliente p {
+    margin-bottom: 8px;
+}
+
+.item-reserva-cliente .botao-cancelar {
+    margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+    #secao-login-cliente {
+        margin: 10px auto;
+    }
+
+    .lista-reservas-cliente {
+        grid-template-columns: 1fr;
+    }
+
+    #botao-confirmar-cliente,
+    #botao-atualizar-cliente {
+        width: 100%;
+    }
+}
+
+
+/* ==========================================
+   GUIZAO DO CORTE - CADASTRO DE CLIENTES
+   ========================================== */
+
+#secao-cadastro {
+    max-width: 480px;
+    margin: 25px auto;
+}
+
+#secao-cadastro h2 {
+    color: #eab308;
+    margin: 12px 0;
+}
+
+#secao-cadastro > p {
+    color: #cbd5e1;
+    margin-bottom: 18px;
+}
+
+#form-cadastro {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#form-cadastro label {
+    color: #f8fafc;
+    font-weight: bold;
+}
+
+#form-cadastro input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #64748b;
+    border-radius: 9px;
+    background: #0f131b;
+    color: #ffffff;
+    font: inherit;
+}
+
+#form-cadastro input:focus {
+    outline: 2px solid #eab308;
+    outline-offset: 2px;
+}
+
+#botao-cadastrar,
+.link-cadastro {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 9px;
+    background: #eab308;
+    color: #090b10;
+    font: inherit;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#botao-cadastrar {
+    margin-top: 12px;
+}
+
+#botao-cadastrar:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+#secao-cadastro .aviso-cadastro {
+    margin: 8px 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+#secao-cadastro .aviso-cadastro a {
+    color: #facc15;
+    font-weight: bold;
+}
+
+#link-entrar-depois {
+    margin: 15px 0;
+}
+
+#secao-cadastro .mensagem-painel {
+    color: #facc15;
+}

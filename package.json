@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+   "test": "node --test testes/api.test.js",
     "db:init": "node esquema.js",
     "db:seed": "node dados/seed.js",
     "db:consultas": "node testes/consultas.js",

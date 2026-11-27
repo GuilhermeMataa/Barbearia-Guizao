@@ -276,35 +276,52 @@ function configurarFormularioAgendamento() {
         });
     });
 
-    // A selecao e uma sugestao. A confirmacao definitiva e autenticada via POST.
+    // Um bloqueio local impede duplo clique durante a nova consulta à API.
+    // A reserva definitiva continua protegida pelo servidor e pela transação SQLite.
+    const botaoEnvio = form.querySelector('[type="submit"]');
+    let envioPendente = false;
     form.addEventListener("submit", async (evento) => {
         evento.preventDefault();
+        if (envioPendente) return;
         if (!form.reportValidity()) return;
+
         const escolhido = servicoAtual();
         if (!escolhido || !campoData.value || !campoHorario.value) {
             mensagem.textContent = "Escolha serviço, dia e um horário Livre.";
             return;
         }
-        if (atualizacaoPendente || !horarios.some((h) =>
-            h.horario === campoHorario.value && h.disponivel)) {
-            mensagem.textContent = "Esse horário não está disponível. Escolha outro.";
+
+        envioPendente = true;
+        if (botaoEnvio) botaoEnvio.disabled = true;
+        try {
+            if (atualizacaoPendente || !horarios.some((h) =>
+                h.horario === campoHorario.value && h.disponivel)) {
+                mensagem.textContent = "Esse horário não está disponível. Escolha outro.";
+                await atualizarDisponibilidade();
+                return;
+            }
+
+            // Uma segunda consulta evita prosseguir com vaga desatualizada.
+            const escolhidoHorario = campoHorario.value;
             await atualizarDisponibilidade();
-            return;
+            const aindaLivre = horarios.some((h) =>
+                h.horario === escolhidoHorario && h.disponivel);
+            if (!aindaLivre || atualizacaoPendente) {
+                mensagem.textContent = "O horário foi ocupado. Escolha outro.";
+                return;
+            }
+            const parametros = new URLSearchParams({
+                servico: escolhido.nome,
+                data: campoData.value,
+                horario: escolhidoHorario
+            });
+            window.location.assign(`/painel-cliente.html?${parametros.toString()}`);
+        } catch (erro) {
+            mensagem.textContent = erro.message || "Falha ao confirmar o horário.";
+        } finally {
+            envioPendente = false;
+            if (botaoEnvio) botaoEnvio.disabled = false;
         }
-        // Segunda consulta antes de navegar, evitando seguir com uma vaga desatualizada.
-        const escolhidoHorario = campoHorario.value;
-        await atualizarDisponibilidade();
-        const aindaLivre = horarios.some((h) => h.horario === escolhidoHorario && h.disponivel);
-        if (!aindaLivre || atualizacaoPendente) {
-            mensagem.textContent = "O horário foi ocupado. Escolha outro.";
-            return;
-        }
-        const parametros = new URLSearchParams({
-            servico: escolhido.nome,
-            data: campoData.value,
-            horario: escolhidoHorario
-        });
-        window.location.assign(`/painel-cliente.html?${parametros.toString()}`);
     });
 
     // Quando a pessoa retorna ao site, mostra disponibilidade atualizada.

@@ -6,9 +6,11 @@
 const db = require("./conexao");
 
 /**
- * Cria um agendamento atomicamente e rejeita qualquer sobreposicao.
- * @param {{usuarioId:number, servicoId:number, inicio:string, fim:string}} dados
- * @returns {object}
+ * Insere reserva na mesma transação que procura sobreposição; isso evita dupla reserva.
+ *
+ * @param {object} dados - IDs e intervalo calculados pelo serviço
+ * @returns {object} Reserva gravada
+ * @throws {Error} Status 409 se horário conflita ou falha SQLite
  */
 function criar(dados) {
     const transacao = db.transaction(() => {
@@ -57,9 +59,11 @@ function criar(dados) {
 }
 
 /**
- * Retorna apenas intervalos ocupados, sem dados dos clientes.
- * @param {string} data Data no formato AAAA-MM-DD
- * @returns {{inicio:string, fim:string}[]}
+ * Retorna somente intervalos ocupados para não expor identidade de clientes.
+ *
+ * @param {string} data - Dia AAAA-MM-DD
+ * @returns {object[]} Intervalos indisponíveis
+ * @throws {Error} Falha de consulta SQLite
  */
 function listarOcupadosNoDia(data) {
     return db.prepare(`
@@ -73,7 +77,12 @@ function listarOcupadosNoDia(data) {
 }
 
 /**
- * Admin ve todos; cliente ve apenas seus proprios agendamentos.
+ * Filtra pelo identificador autenticado no próprio SQL para evitar IDOR.
+ *
+ * @param {number} usuarioId - ID do JWT
+ * @param {string} papel - Papel conferido pelo middleware
+ * @returns {object[]} Reservas autorizadas
+ * @throws {Error} Falha de consulta SQLite
  */
 function listarVisiveis(usuarioId, papel) {
     const ehAdmin = papel === "admin" ? 1 : 0;
@@ -97,7 +106,13 @@ function listarVisiveis(usuarioId, papel) {
 }
 
 /**
- * Cancela somente agendamentos visiveis ao usuario.
+ * Verifica titularidade e status na mesma instrução UPDATE, impedindo cancelar reserva alheia.
+ *
+ * @param {number} id - ID da reserva
+ * @param {number} usuarioId - ID do JWT
+ * @param {string} papel - Papel conferido pelo middleware
+ * @returns {boolean} Verdadeiro se uma linha foi alterada
+ * @throws {Error} Falha de escrita SQLite
  */
 function cancelarVisivel(id, usuarioId, papel) {
     const ehAdmin = papel === "admin" ? 1 : 0;

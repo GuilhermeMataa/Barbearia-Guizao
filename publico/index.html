@@ -26,16 +26,33 @@
     -->
 
     <!-- Cabeçalho -->
-    <header>
-        <h1>Guizao do Corte</h1>
 
-        <nav aria-label="Menu principal">
-            <a href="#inicio">Início</a>
-            <a href="#sobre">Sobre</a>
-            <a href="#servicos">Serviços</a>
-            <a href="#contato">Contato</a>
-        </nav>
-    </header>
+<!-- Cabeçalho da barbearia -->
+<header>
+    <h1>Guizao do Corte</h1>
+
+    <!-- Botão do menu para telas pequenas -->
+    <button
+        type="button"
+        class="botao-menu"
+        aria-label="Abrir menu"
+        aria-controls="menu-principal"
+        aria-expanded="false">
+
+        <span aria-hidden="true">☰</span>
+    </button>
+
+    <!-- Navegação principal -->
+    <nav id="menu-principal"
+         aria-label="Menu principal">
+
+        <a href="#inicio">Início</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#servicos">Serviços</a>
+        <a href="#contato">Contato</a>
+    </nav>
+</header>
+
 
     <main>
 

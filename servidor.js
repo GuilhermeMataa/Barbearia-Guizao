@@ -1,7 +1,6 @@
 
 /**
  * Guizao do Corte - Servidor HTTP.
- * Ponto de entrada da API e do frontend.
  */
 
 "use strict";
@@ -12,12 +11,23 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
+// Exige uma chave secreta forte.
+if (
+    !process.env.JWT_SECRET ||
+    Buffer.byteLength(process.env.JWT_SECRET, "utf8") < 32
+) {
+    console.error(
+        "Configure JWT_SECRET com pelo menos 32 bytes no .env."
+    );
+    process.exit(1);
+}
+
 const rotasServicos = require("./rotas/servicos");
+const rotasAutenticacao = require("./rotas/autenticacao");
 
 const app = express();
 const PORTA = Number(process.env.PORT) || 3000;
 
-// Protecoes basicas.
 app.use(helmet());
 
 app.use(rateLimit({
@@ -27,10 +37,8 @@ app.use(rateLimit({
     legacyHeaders: false
 }));
 
-// Permite receber JSON.
 app.use(express.json({ limit: "10kb" }));
 
-// Verifica se a API funciona.
 app.get("/api/saude", (req, res) => {
     res.status(200).json({
         sucesso: true,
@@ -38,15 +46,16 @@ app.get("/api/saude", (req, res) => {
     });
 });
 
-// Rotas dos servicos.
+// Rotas da API.
+app.use("/api/auth", rotasAutenticacao);
 app.use("/api/servicos", rotasServicos);
 
-// Disponibiliza o frontend.
+// Frontend.
 app.use(express.static(
     path.join(__dirname, "publico")
 ));
 
-// Rotas desconhecidas.
+// Rota inexistente.
 app.use((req, res) => {
     res.status(404).json({
         erro: "Rota nao encontrada."

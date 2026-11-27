@@ -541,3 +541,338 @@ a:focus-visible {
         transition: none;
     }
 }
+
+
+/*
+ * Guizao do Corte - Estilos do agendamento.
+ * Camada: frontend.
+ * Padroniza formulário, campos e botão no tema dark.
+ */
+
+#agendamento {
+    padding: 80px 8%;
+    background: #090b10;
+    border-top: 1px solid #334155;
+}
+
+.cabecalho-agendamento {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.etiqueta {
+    color: #eab308;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+#agendamento h2 {
+    margin: 12px 0;
+    color: #ffffff;
+    font-size: clamp(28px, 5vw, 42px);
+}
+
+.cabecalho-agendamento p {
+    color: #cbd5e1;
+}
+
+/* Caixa principal do formulário */
+
+#form-agendamento {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 35px;
+
+    background: #151923;
+    border: 1px solid #334155;
+    border-radius: 18px;
+}
+
+/* Organização dos campos */
+
+.grade-formulario {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 25px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.campo label {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+/* Inputs, calendário e seleção */
+
+.campo input,
+.campo select {
+    width: 100%;
+    min-width: 0;
+    padding: 15px;
+
+    background: #0f131b;
+    color: #ffffff;
+
+    border: 1px solid #64748b;
+    border-radius: 10px;
+
+    font: inherit;
+}
+
+.campo input:focus,
+.campo select:focus {
+    outline: 2px solid #eab308;
+    outline-offset: 2px;
+}
+
+.campo input[type="date"] {
+    color-scheme: dark;
+}
+
+/* Botão principal de agendamento */
+
+.botao-agendar {
+    width: 100%;
+    margin-top: 30px;
+    padding: 17px;
+
+    background: #eab308;
+    color: #090b10;
+
+    border: none;
+    border-radius: 10px;
+
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.botao-agendar:hover {
+    background: #facc15;
+}
+
+.botao-agendar:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
+}
+
+/* Mensagens e observações */
+
+.mensagem-agendamento {
+    margin-top: 18px;
+    color: #fca5a5;
+}
+
+.aviso-agendamento {
+    margin-top: 20px;
+    color: #94a3b8;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Responsividade do formulário */
+
+@media (max-width: 650px) {
+    #agendamento {
+        padding: 60px 6%;
+    }
+
+    #form-agendamento {
+        padding: 24px 18px;
+    }
+
+    .grade-formulario {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+
+/*
+ * Guizao do Corte - Calendário de agendamento.
+ * Camada: frontend.
+ * Estiliza datas e horários selecionáveis em grade.
+ */
+
+/* Área do calendário e dos horários */
+.campo-grade {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.rotulo-grade {
+    color: #f8fafc;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+/* Organiza os quadradinhos */
+.grade-opcoes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* Aparência dos quadradinhos */
+.opcao-grade {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 80px;
+    padding: 12px 8px;
+
+    background-color: #0f131b;
+    color: #f8fafc;
+
+    border: 1px solid #64748b;
+    border-radius: 12px;
+
+    font-family: inherit;
+    text-align: center;
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Efeito ao passar o mouse */
+.opcao-grade:hover {
+    background-color: #1e293b;
+    border-color: #eab308;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(234, 179, 8, 0.12);
+}
+
+/* Quadradinho selecionado */
+.opcao-grade.ativa,
+.opcao-grade[aria-pressed="true"] {
+    background-color: #eab308;
+    color: #090b10;
+    border-color: #eab308;
+
+    box-shadow: 0 0 18px rgba(234, 179, 8, 0.2);
+}
+
+/* Mantém o destaque mesmo com o mouse em cima */
+.opcao-grade.ativa:hover,
+.opcao-grade[aria-pressed="true"]:hover {
+    background-color: #facc15;
+}
+
+/* Texto superior: Hoje, Seg, Ter... */
+.linha-superior {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Texto principal: dia ou horário */
+.linha-principal {
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+/* Texto inferior: mês ou legenda */
+.linha-inferior {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Opções desabilitadas futuramente pela API */
+.opcao-grade:disabled {
+    opacity: 0.4;
+    background-color: #1e293b;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Acessibilidade para quem utiliza teclado */
+.opcao-grade:focus-visible {
+    outline: 3px solid #eab308;
+    outline-offset: 3px;
+}
+
+/* Mensagem quando não existem opções */
+.mensagem-vazia-grade {
+    grid-column: 1 / -1;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    padding: 12px 0;
+    line-height: 1.5;
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+    .grade-opcoes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* Celulares */
+@media (max-width: 600px) {
+    .campo-grade {
+        grid-column: 1 / -1;
+    }
+
+    .grade-opcoes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .opcao-grade {
+        min-height: 72px;
+        padding: 10px 6px;
+        border-radius: 10px;
+    }
+
+    .linha-superior {
+        font-size: 0.75rem;
+    }
+
+    .linha-principal {
+        font-size: 1rem;
+    }
+
+    .linha-inferior {
+        font-size: 0.7rem;
+    }
+}
+
+/* Celulares muito estreitos */
+@media (max-width: 350px) {
+    .grade-opcoes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Respeita preferência por menos animações */
+@media (prefers-reduced-motion: reduce) {
+    .opcao-grade {
+        transition: none;
+    }
+
+    .opcao-grade:hover {
+        transform: none;
+    }
+}

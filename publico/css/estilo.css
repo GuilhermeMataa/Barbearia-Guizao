@@ -264,3 +264,117 @@ a:focus-visible {
         transition: none;
     }
 }
+
+
+
+
+/*
+ * Cardápio de serviços — frontend.
+ * Estilização dos cartões que apresentam os
+ * serviços disponíveis na barbearia.
+ */
+
+.grade-servicos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.card-servico {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    padding: 35px;
+    background: #151923;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+
+    transition:
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.card-servico:hover {
+    transform: translateY(-8px);
+    border-color: #eab308;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.icone-servico {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.card-servico h3 {
+    color: #f8fafc;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.card-servico p {
+    color: #cbd5e1;
+    flex-grow: 1;
+    margin-bottom: 25px;
+}
+
+.preco-servico {
+    display: block;
+    color: #eab308;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+}
+
+.botao-servico {
+    display: inline-block;
+    padding: 12px 20px;
+
+    background: transparent;
+    color: #eab308;
+    border: 1px solid #eab308;
+    border-radius: 8px;
+
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+.botao-servico:hover {
+    background: #eab308;
+    color: #090b10;
+}
+
+.botao-servico:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: 4px;
+}
+
+@media (max-width: 1000px) {
+    .grade-servicos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .grade-servicos {
+        grid-template-columns: 1fr;
+    }
+
+    .card-servico {
+        padding: 25px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-servico,
+    .botao-servico {
+        transition: none;
+    }
+}

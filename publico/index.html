@@ -4,6 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
@@ -11,19 +12,20 @@
           content="Guizao do Corte: barbearia, estilo e agendamentos.">
 
     <title>Guizao do Corte | Barbearia</title>
-     <link rel="stylesheet" href=" css/estilo.css"> 
+
+    <!-- Importa a identidade visual da página -->
+    <link rel="stylesheet" href="css/estilo.css">
 </head>
-   
 
 <body>
 
     <!--
         Guizao do Corte - Página inicial.
         Camada: frontend.
-        Estrutura HTML semântica da landing page.
+        Apresenta a barbearia, os serviços e o contato.
     -->
 
-    <!-- Cabeçalho da página -->
+    <!-- Cabeçalho -->
     <header>
         <h1>Guizao do Corte</h1>
 
@@ -37,7 +39,7 @@
 
     <main>
 
-        <!-- Seção principal -->
+        <!-- Apresentação principal -->
         <section id="inicio">
             <h2>Seu estilo começa aqui!</h2>
 
@@ -51,7 +53,7 @@
             </a>
         </section>
 
-        <!-- Apresentação da barbearia -->
+        <!-- Sobre a barbearia -->
         <section id="sobre">
             <h2>Sobre a barbearia</h2>
 
@@ -64,37 +66,117 @@
 
         <!-- Catálogo de serviços -->
         <section id="servicos">
+
             <h2>Nossos serviços</h2>
 
             <p>
-                Conheça nossos serviços e escolha
-                o atendimento ideal para você.
+                Escolha o serviço ideal para renovar
+                seu estilo.
             </p>
 
-            <!-- Os cards serão criados em outro commit -->
-            <p>Nosso cardápio estará disponível em breve.</p>
+            <div class="grade-servicos">
+
+                <!-- Serviço 1 -->
+                <article class="card-servico">
+
+                    <span class="icone-servico"
+                          aria-hidden="true">✂️</span>
+
+                    <h3>Corte masculino</h3>
+
+                    <p>
+                        Um corte moderno e personalizado
+                        para valorizar seu estilo.
+                    </p>
+
+                    <span class="preco-servico">
+                        Valor sob consulta
+                    </span>
+
+                    <a href="#contato"
+                       class="botao-servico">
+                        Quero agendar
+                    </a>
+
+                </article>
+
+                <!-- Serviço 2 -->
+                <article class="card-servico">
+
+                    <span class="icone-servico"
+                          aria-hidden="true">🪒</span>
+
+                    <h3>Barba</h3>
+
+                    <p>
+                        Cuidado e acabamento para deixar
+                        sua barba sempre alinhada.
+                    </p>
+
+                    <span class="preco-servico">
+                        Valor sob consulta
+                    </span>
+
+                    <a href="#contato"
+                       class="botao-servico">
+                        Quero agendar
+                    </a>
+
+                </article>
+
+                <!-- Serviço 3 -->
+                <article class="card-servico">
+
+                    <span class="icone-servico"
+                          aria-hidden="true">💈</span>
+
+                    <h3>Corte + Barba</h3>
+
+                    <p>
+                        Uma combinação completa para
+                        renovar seu visual.
+                    </p>
+
+                    <span class="preco-servico">
+                        Valor sob consulta
+                    </span>
+
+                    <a href="#contato"
+                       class="botao-servico">
+                        Quero agendar
+                    </a>
+
+                </article>
+
+            </div>
         </section>
 
         <!-- Contato e localização -->
         <section id="contato">
+
             <h2>Entre em contato</h2>
 
-            <p>Endereço: Rua Ana Almeida, 8</p>
+            <p>
+                Endereço: Rua Ana Almeida, 8
+            </p>
 
-            <p>WhatsApp: (88) 98131-5016</p>
+            <p>
+                WhatsApp: (88) 98131-5016
+            </p>
 
-            <a href="https://wa.me/5588981315016"
+            <a href="https://wa.me/5588981315016?text=Ol%C3%A1%21%20Gostaria%20de%20agendar%20um%20hor%C3%A1rio%20na%20Guizao%20do%20Corte."
                target="_blank"
                rel="noopener noreferrer">
                 Agendar pelo WhatsApp
             </a>
+
         </section>
 
     </main>
 
     <!-- Rodapé -->
     <footer>
-        <p>Guizao do Corte - Barbearia</p>
+        <p>Guizao do Corte — Barbearia</p>
         <p>Todos os direitos reservados.</p>
     </footer>
 

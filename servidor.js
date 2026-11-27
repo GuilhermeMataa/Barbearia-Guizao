@@ -12,6 +12,8 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
+const rotasServicos = require("./rotas/servicos");
+
 const app = express();
 const PORTA = Number(process.env.PORT) || 3000;
 
@@ -25,10 +27,10 @@ app.use(rateLimit({
     legacyHeaders: false
 }));
 
-// Permite receber requisicoes JSON.
+// Permite receber JSON.
 app.use(express.json({ limit: "10kb" }));
 
-// Rota para verificar se a API funciona.
+// Verifica se a API funciona.
 app.get("/api/saude", (req, res) => {
     res.status(200).json({
         sucesso: true,
@@ -36,12 +38,15 @@ app.get("/api/saude", (req, res) => {
     });
 });
 
-// Disponibiliza o frontend existente.
+// Rotas dos servicos.
+app.use("/api/servicos", rotasServicos);
+
+// Disponibiliza o frontend.
 app.use(express.static(
     path.join(__dirname, "publico")
 ));
 
-// Resposta para rotas desconhecidas.
+// Rotas desconhecidas.
 app.use((req, res) => {
     res.status(404).json({
         erro: "Rota nao encontrada."
@@ -61,7 +66,6 @@ app.use((erro, req, res, next) => {
     });
 });
 
-// Inicia o servidor.
 app.listen(PORTA, () => {
     console.log(
         `Guizao do Corte: http://localhost:${PORTA}`

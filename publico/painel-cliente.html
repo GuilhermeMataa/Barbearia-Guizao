@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Área do Cliente | Guizao do Corte</title>
+
+    <link rel="stylesheet" href="/css/estilo.css">
+    <link rel="stylesheet" href="/css/paineis.css">
+</head>
+<body>
+    <header class="cabecalho-painel">
+        <h1>Guizao do Corte</h1>
+        <nav aria-label="Navegação">
+            <a href="/index.html">Página inicial</a>
+        </nav>
+    </header>
+
+    <main class="pagina-painel">
+
+        <!-- LOGIN -->
+        <section id="secao-login-cliente"
+                 class="cartao-painel">
+            <span class="etiqueta">ÁREA DO CLIENTE</span>
+            <h2>Entre na sua conta</h2>
+            <p>
+                Faça login para confirmar e acompanhar
+                seus agendamentos.
+            </p>
+
+            <form id="form-login-cliente">
+                <label for="email-cliente">E-mail</label>
+                <input
+                    id="email-cliente"
+                    type="email"
+                    autocomplete="username"
+                    required>
+
+                <label for="senha-cliente">Senha</label>
+                <input
+                    id="senha-cliente"
+                    type="password"
+                    autocomplete="current-password"
+                    required>
+
+                <button id="botao-login-cliente" type="submit">
+                    Entrar
+                </button>
+            </form>
+
+            <p id="mensagem-login-cliente"
+               class="mensagem-painel"
+               role="status"
+               aria-live="polite"></p>
+        </section>
+
+        <!-- CONTEUDO DO CLIENTE -->
+        <section id="secao-area-cliente" hidden>
+            <div class="topo-painel">
+                <div>
+                    <span class="etiqueta">MINHA CONTA</span>
+                    <h2>Área do cliente</h2>
+                    <p>
+                        Bem-vindo,
+                        <strong id="nome-cliente-logado"></strong>!
+                    </p>
+                </div>
+
+                <button type="button"
+                        id="botao-sair-cliente"
+                        class="botao-secundario">
+                    Sair da conta
+                </button>
+            </div>
+
+            <!-- NOVO AGENDAMENTO -->
+            <section class="cartao-painel">
+                <h3>Confirmar um agendamento</h3>
+                <p>
+                    Escolha um serviço e um horário.
+                    A confirmação será feita pelo sistema.
+                </p>
+
+                <form id="form-reserva-cliente"
+                      class="formulario-cliente">
+
+                    <label for="servico-cliente">
+                        Serviço
+                    </label>
+                    <select id="servico-cliente" required>
+                        <option value="">
+                            Carregando serviços...
+                        </option>
+                    </select>
+
+                    <label for="data-cliente">
+                        Data
+                    </label>
+                    <input type="date"
+                           id="data-cliente"
+                           required>
+
+                    <label for="horario-cliente">
+                        Horário
+                    </label>
+                    <select id="horario-cliente" required>
+                        <option value="">
+                            Escolha a data e o serviço
+                        </option>
+                    </select>
+
+                    <p class="aviso-cliente">
+                        Atendimento das 9h às 18h.
+                        O sistema verificará se o
+                        horário está disponível.
+                    </p>
+
+                    <button type="submit"
+                            id="botao-confirmar-cliente">
+                        Confirmar agendamento
+                    </button>
+                </form>
+
+                <p id="mensagem-reserva-cliente"
+                   class="mensagem-painel"
+                   role="status"
+                   aria-live="polite"></p>
+
+                <div id="confirmacao-cliente"
+                     class="confirmacao-cliente"
+                     role="status"
+                     aria-live="polite"
+                     hidden>
+                    <h3>Agendamento confirmado!</h3>
+                    <p id="detalhes-confirmacao"></p>
+                </div>
+            </section>
+
+            <!-- MINHAS RESERVAS -->
+            <section class="cartao-painel"
+                     id="secao-minhas-reservas">
+                <div class="barra-painel">
+                    <h3>Meus agendamentos</h3>
+                    <button type="button"
+                            id="botao-atualizar-cliente">
+                        Atualizar lista
+                    </button>
+                </div>
+
+                <p id="mensagem-lista-cliente"
+                   class="mensagem-painel"
+                   role="status"
+                   aria-live="polite"></p>
+
+                <ul id="lista-reservas-cliente"
+                    class="lista-reservas-cliente">
+                </ul>
+            </section>
+        </section>
+    </main>
+
+    <script src="/js/painel-cliente.js"></script>
+</body>
+</html>

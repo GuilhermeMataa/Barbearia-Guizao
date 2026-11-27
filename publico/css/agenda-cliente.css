@@ -1,0 +1,176 @@
+/* Guizao do Corte - Calendario e horarios do cliente. */
+[hidden] { display: none !important; }
+
+#secao-login-cliente {
+    max-width: 480px;
+    margin: 25px auto;
+}
+
+#secao-login-cliente h2,
+#secao-area-cliente h2,
+#secao-area-cliente h3 {
+    color: #eab308;
+    margin: 12px 0;
+}
+
+#secao-login-cliente > p,
+#secao-area-cliente p { color: #cbd5e1; }
+
+#form-login-cliente {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+#form-login-cliente label,
+.campo-agenda > label {
+    color: #f8fafc;
+    font-weight: bold;
+}
+
+#form-login-cliente input,
+#servico-cliente {
+    width: 100%;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #64748b;
+    border-radius: 9px;
+    background: #0f131b;
+    color: #f8fafc;
+    font: inherit;
+}
+
+#form-login-cliente input:focus,
+#servico-cliente:focus {
+    outline: 2px solid #eab308;
+    outline-offset: 2px;
+}
+
+#form-login-cliente button,
+.botao-primario-cliente {
+    padding: 14px 18px;
+    background: #eab308;
+    border: 0;
+    border-radius: 9px;
+    color: #090b10;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+#form-login-cliente button { margin-top: 10px; }
+.cadastro-aviso { margin-top: 16px; }
+.cadastro-aviso a { color: #eab308; font-weight: bold; }
+
+#secao-area-cliente > .cartao-painel { margin-bottom: 25px; }
+.campo-agenda { margin-top: 24px; }
+.campo-agenda > label { display: block; margin-bottom: 10px; }
+#secao-area-cliente .rotulo-grade { margin-bottom: 10px; }
+
+/* Os componentes herdam os quadradinhos de estilo.css. */
+.grade-dias-cliente { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.grade-horarios-cliente { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.grade-horarios-cliente .opcao-grade { min-height: 72px; }
+
+.grade-horarios-cliente .opcao-grade.slot-livre {
+    background: #10281c;
+    border-color: #22c55e;
+}
+.grade-horarios-cliente .opcao-grade.slot-livre .linha-inferior {
+    color: #86efac;
+    font-weight: 700;
+}
+.grade-horarios-cliente .opcao-grade.slot-ocupado:disabled {
+    background: #381419;
+    color: #fca5a5;
+    border-color: #b91c1c;
+    opacity: 1;
+    cursor: not-allowed;
+}
+.grade-horarios-cliente .opcao-grade.slot-indisponivel:disabled {
+    background: #27272a;
+    color: #94a3b8;
+    border-color: #52525b;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+.grade-horarios-cliente .opcao-grade:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.grade-horarios-cliente .opcao-grade.ativa,
+.grade-dias-cliente .opcao-grade.ativa {
+    background: #eab308;
+    color: #090b10;
+    border-color: #eab308;
+}
+
+.legenda-disponibilidade {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #cbd5e1;
+    margin: 8px 0;
+    font-size: 0.9rem;
+}
+.bolinha-livre,
+.bolinha-ocupado {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+.bolinha-livre { background: #22c55e; }
+.bolinha-ocupado { background: #71717a; margin-left: 12px; }
+
+#botao-confirmar-cliente { width: 100%; margin-top: 18px; }
+.aviso-agenda { margin-top: 14px; font-size: 0.9rem; }
+.confirmacao-cliente {
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid #eab308;
+    border-radius: 10px;
+    background: #272511;
+}
+
+.lista-reservas-cliente {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+.item-reserva-cliente {
+    background: #0f131b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 20px;
+}
+.item-reserva-cliente h4 { color: #eab308; margin-bottom: 8px; }
+.item-reserva-cliente p { margin-bottom: 8px; }
+.item-reserva-cliente button { margin-top: 8px; }
+
+@media (max-width: 1080px) {
+    .grade-dias-cliente { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grade-horarios-cliente { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 650px) {
+    .grade-dias-cliente { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grade-horarios-cliente { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lista-reservas-cliente { grid-template-columns: 1fr; }
+    #botao-atualizar-cliente { width: 100%; }
+}
+@media (max-width: 380px) {
+    .grade-dias-cliente { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grade-horarios-cliente { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.botao-atualizar-horarios { margin-top: 14px; }
+
+/* Contraste dos textos quando um horario livre e selecionado. */
+.grade-horarios-cliente .opcao-grade.slot-livre.ativa .linha-inferior {
+    color: #090b10;
+}

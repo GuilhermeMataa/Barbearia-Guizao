@@ -1,69 +1,63 @@
-
 /**
- * Guizao do Corte - Area do cliente.
- * Login, cadastro, listagem e cancelamento de reservas.
+ * Guizao do Corte - Painel do cliente com agenda visual.
+ * Os horarios ocupados sao consultados na API (SQLite).
+ * A verificacao final de conflito continua no POST (HTTP 409).
  */
-
 "use strict";
 
 const CHAVE_TOKEN = "guizao_token";
 const $ = (seletor) => document.querySelector(seletor);
 
-const telaLogin = $("#secao-login-cliente");
-const telaCliente = $("#secao-area-cliente");
-
+const secaoLogin = $("#secao-login-cliente");
+const secaoCliente = $("#secao-area-cliente");
 const formLogin = $("#form-login-cliente");
 const formReserva = $("#form-reserva-cliente");
-
-const mensagemLogin = $("#mensagem-login-cliente");
-const mensagemReserva = $("#mensagem-reserva-cliente");
-const mensagemLista = $("#mensagem-lista-cliente");
-
 const servicoCampo = $("#servico-cliente");
 const dataCampo = $("#data-cliente");
 const horarioCampo = $("#horario-cliente");
-
+const diasGrade = $("#dias-cliente");
+const horariosGrade = $("#horarios-cliente");
+const mensagemLogin = $("#mensagem-login-cliente");
+const mensagemReserva = $("#mensagem-reserva-cliente");
+const mensagemLista = $("#mensagem-lista-cliente");
 const botaoLogin = $("#botao-login-cliente");
 const botaoConfirmar = $("#botao-confirmar-cliente");
 const botaoAtualizar = $("#botao-atualizar-cliente");
-
 const confirmacao = $("#confirmacao-cliente");
 const listaReservas = $("#lista-reservas-cliente");
 
+const parametrosIniciais = new URLSearchParams(window.location.search);
+const nomeServicoInicial = parametrosIniciais.get("servico");
+const dataInicial = parametrosIniciais.get("data");
+const horarioInicial = parametrosIniciais.get("horario");
+$("#link-criar-conta").href = "/cadastro.html" + window.location.search;
+
 let servicosDisponiveis = [];
+let ultimaListaHorarios = [];
+let sequenciaConsulta = 0;
 
-/**
- * Solicita dados da API e trata erros HTTP.
- */
-async function chamarApi(caminho, opcoes = {}, exigeLogin = true) {
-    const headers = {
-        ...(opcoes.headers || {})
-    };
+/** Chama a API e transforma erros em mensagens amigaveis. */
+async function chamarApi(caminho, opcoes = {}, autenticado = true) {
+    const headers = { ...(opcoes.headers || {}) };
 
-    if (exigeLogin) {
+    if (autenticado) {
         const token = sessionStorage.getItem(CHAVE_TOKEN);
-
         if (!token) {
             const erro = new Error("Faça login novamente.");
             erro.status = 401;
             throw erro;
         }
-
         headers.Authorization = `Bearer ${token}`;
     }
 
-    const resposta = await fetch(caminho, {
-        ...opcoes,
-        headers
-    });
-
+    const resposta = await fetch(caminho, { ...opcoes, headers });
     let dados = null;
 
     if (resposta.status !== 204) {
         try {
             dados = await resposta.json();
         } catch {
-            // A resposta pode nao conter JSON.
+            // A resposta pode nao ter corpo JSON.
         }
     }
 
@@ -71,483 +65,475 @@ async function chamarApi(caminho, opcoes = {}, exigeLogin = true) {
         const erro = new Error(
             dados?.erro || "Não foi possível concluir a operação."
         );
-
         erro.status = resposta.status;
         throw erro;
     }
-
     return dados;
 }
 
-/**
- * Obtem a data e hora atuais na barbearia.
- */
+/** Retorna data e hora atual na barbearia. */
 function agoraFortaleza() {
-    const formatador = new Intl.DateTimeFormat(
-        "en-GB",
-        {
-            timeZone: "America/Fortaleza",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            hourCycle: "h23"
-        }
-    );
-
+    const fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "America/Fortaleza",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23"
+    });
     const partes = Object.fromEntries(
-        formatador.formatToParts(new Date())
-            .map((parte) => [parte.type, parte.value])
+        fmt.formatToParts(new Date()).map((p) => [p.type, p.value])
     );
-
     return {
         data: `${partes.year}-${partes.month}-${partes.day}`,
-        minutos: Number(partes.hour) * 60 +
-                 Number(partes.minute)
+        minutos: Number(partes.hour) * 60 + Number(partes.minute)
     };
 }
 
-/**
- * Formata a data recebida do SQLite.
- */
+/** Formata AAAA-MM-DD HH:mm:ss para DD/MM/AAAA HH:mm. */
 function formatarInicio(valor) {
-    const [data, hora = ""] = String(valor).split(" ");
+    if (typeof valor !== "string") return "";
+    const [data, hora = ""] = valor.split(" ");
     const partes = data.split("-");
-
-    if (partes.length !== 3) {
-        return String(valor);
-    }
-
-    return (
-        `${partes[2]}/${partes[1]}/${partes[0]} ` +
-        hora.slice(0, 5)
-    );
+    if (partes.length !== 3) return valor;
+    return `${partes[2]}/${partes[1]}/${partes[0]} ${hora.slice(0, 5)}`;
 }
 
-/**
- * Exibe a tela de login.
- */
+/** Renderiza um aviso, sempre via textContent. */
+function avisoNaGrade(grade, texto) {
+    const p = document.createElement("p");
+    p.className = "mensagem-vazia-grade";
+    p.textContent = texto;
+    grade.replaceChildren(p);
+}
+
 function mostrarLogin(texto = "") {
-    telaLogin.hidden = false;
-    telaCliente.hidden = true;
+    secaoLogin.hidden = false;
+    secaoCliente.hidden = true;
     listaReservas.replaceChildren();
     confirmacao.hidden = true;
     mensagemLogin.textContent = texto;
 }
 
-/**
- * Exibe a area da conta autenticada.
- */
 function mostrarCliente(usuario) {
     $("#nome-cliente-logado").textContent = usuario.nome;
-    telaLogin.hidden = true;
-    telaCliente.hidden = false;
+    secaoLogin.hidden = true;
+    secaoCliente.hidden = false;
     $("#senha-cliente").value = "";
 }
 
 function sair(texto = "Você saiu da sua conta.") {
+    sequenciaConsulta++;
     sessionStorage.removeItem(CHAVE_TOKEN);
     mostrarLogin(texto);
 }
 
 function tratarErro(erro, destino) {
     if (erro.status === 401) {
-        sair("Sua sessão expirou. Faça login novamente.");
-        return;
+        sair("Sessão expirada. Faça login novamente.");
+    } else {
+        destino.textContent = erro.message;
     }
-
-    destino.textContent = erro.message;
 }
 
-/**
- * Atualiza os horarios permitidos de acordo com a
- * duracao do servico e o horario de fechamento.
- */
-function atualizarHorarios() {
-    horarioCampo.replaceChildren();
-
-    const inicial = new Option("Selecione o horário", "");
-    horarioCampo.appendChild(inicial);
-
-    const servico = servicosDisponiveis.find(
-        (item) => item.id === Number(servicoCampo.value)
+/** Habilita o botao somente apos selecionar horario disponivel. */
+function atualizarBotaoConfirmar() {
+    botaoConfirmar.disabled = !(
+        servicoCampo.value &&
+        dataCampo.value &&
+        horarioCampo.value &&
+        ultimaListaHorarios.some(
+            (item) => item.horario === horarioCampo.value && item.disponivel
+        )
     );
+}
 
-    if (!servico || !dataCampo.value) {
-        return;
+/** Marca visualmente um dos quadradinhos. */
+function marcarEscolha(grade, escolhido) {
+    grade.querySelectorAll(".opcao-grade").forEach((botao) => {
+        const selecionado = botao === escolhido;
+        botao.classList.toggle("ativa", selecionado);
+        botao.setAttribute("aria-pressed", String(selecionado));
+    });
+}
+
+/** Gera os proximos 14 dias, com a hora da barbearia. */
+async function gerarDias() {
+    diasGrade.replaceChildren();
+    const hojeISO = agoraFortaleza().data;
+    const base = new Date(`${hojeISO}T12:00:00Z`);
+    const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const meses = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+    const botoes = [];
+
+    for (let i = 0; i < 14; i++) {
+        const dia = new Date(base.getTime() + i * 86400000);
+        const dataISO = dia.toISOString().slice(0, 10);
+
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "opcao-grade";
+        botao.setAttribute("aria-pressed", "false");
+        botao.setAttribute("aria-label", `Selecionar ${dataISO}`);
+
+        for (const [classe, valor] of [
+            ["linha-superior", i === 0 ? "Hoje" : diasSemana[dia.getUTCDay()]],
+            ["linha-principal", String(dia.getUTCDate()).padStart(2, "0")],
+            ["linha-inferior", meses[dia.getUTCMonth()]]
+        ]) {
+            const span = document.createElement("span");
+            span.className = classe;
+            span.textContent = valor;
+            botao.appendChild(span);
+        }
+
+        botao.addEventListener("click", () => selecionarDia(dataISO, botao));
+        diasGrade.appendChild(botao);
+        botoes.push({ dataISO, botao });
     }
 
-    const agora = agoraFortaleza();
-
-    for (let minutos = 540; minutos < 1080; minutos += 30) {
-        if (minutos + servico.duracao_minutos > 1080) {
-            continue;
-        }
-
-        if (
-            dataCampo.value === agora.data &&
-            minutos <= agora.minutos
-        ) {
-            continue;
-        }
-
-        const horas = String(
-            Math.floor(minutos / 60)
-        ).padStart(2, "0");
-
-        const mins = String(
-            minutos % 60
-        ).padStart(2, "0");
-
-        const horario = `${horas}:${mins}`;
-
-        horarioCampo.appendChild(
-            new Option(horario, horario)
-        );
+    const inicial = botoes.find((b) => b.dataISO === dataInicial) || botoes[0];
+    if (inicial) {
+        await selecionarDia(inicial.dataISO, inicial.botao, true);
     }
 }
 
+/** Seleciona dia e consulta todos os horarios para o servico. */
+async function selecionarDia(dataISO, botao, inicial = false) {
+    dataCampo.value = dataISO;
+    horarioCampo.value = "";
+    confirmacao.hidden = true;
+    marcarEscolha(diasGrade, botao);
+    atualizarBotaoConfirmar();
+    await carregarHorarios(inicial ? horarioInicial : "");
+}
+
 /**
- * Carrega os servicos ativos cadastrados no banco.
+ * Consulta a ocupacao real no SQLite. A API envia apenas horarios livres/ocupados.
+ * Usa numeracao para descartar respostas de uma consulta antiga.
  */
-async function carregarServicos() {
-    mensagemReserva.textContent = "Carregando serviços...";
+async function carregarHorarios(horarioDesejado = "") {
+    const sequencia = ++sequenciaConsulta;
+    horarioCampo.value = "";
+    ultimaListaHorarios = [];
+    atualizarBotaoConfirmar();
+    mensagemReserva.textContent = "";
+
+    if (!servicoCampo.value || !dataCampo.value) {
+        avisoNaGrade(horariosGrade, "Escolha um serviço e um dia para ver os horários.");
+        return;
+    }
+
+    avisoNaGrade(horariosGrade, "Consultando horários disponíveis...");
 
     try {
+        const query = new URLSearchParams({
+            data: dataCampo.value,
+            servico_id: servicoCampo.value
+        });
         const resultado = await chamarApi(
-            "/api/servicos", {}, false
+            `/api/agendamentos/disponibilidade?${query.toString()}`
         );
 
-        if (!Array.isArray(resultado)) {
-            throw new Error("Resposta inválida dos serviços.");
+        if (sequencia !== sequenciaConsulta) return;
+        if (!Array.isArray(resultado?.horarios)) {
+            throw new Error("Resposta inesperada do servidor.");
         }
 
-        servicosDisponiveis = resultado;
-        servicoCampo.replaceChildren();
+        ultimaListaHorarios = resultado.horarios;
+        horariosGrade.replaceChildren();
+        let livres = 0;
 
-        servicoCampo.appendChild(
-            new Option("Selecione o serviço", "")
-        );
+        for (const item of ultimaListaHorarios) {
+            const botao = document.createElement("button");
+            botao.type = "button";
+            botao.className = "opcao-grade";
+            botao.setAttribute("aria-pressed", "false");
+            botao.disabled = !item.disponivel;
 
-        for (const servico of resultado) {
-            const preco = (
-                servico.preco_centavos / 100
-            ).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL"
-            });
+            const hora = document.createElement("span");
+            hora.className = "linha-principal";
+            hora.textContent = item.horario;
 
-            servicoCampo.appendChild(
-                new Option(
-                    `${servico.nome} — ${preco}`,
-                    String(servico.id)
-                )
+            const estado = document.createElement("span");
+            estado.className = "linha-inferior";
+            estado.textContent = item.disponivel ? "Livre"
+                : item.motivo === "passado" ? "Passou"
+                : item.motivo === "fechado" ? "Fechado"
+                : "Ocupado";
+            botao.append(hora, estado);
+
+            if (item.disponivel) {
+                botao.classList.add("slot-livre");
+                livres++;
+                botao.addEventListener("click", () => {
+                    horarioCampo.value = item.horario;
+                    marcarEscolha(horariosGrade, botao);
+                    confirmacao.hidden = true;
+                    mensagemReserva.textContent = "";
+                    atualizarBotaoConfirmar();
+                });
+            } else {
+                botao.classList.add(
+                    item.motivo === "ocupado" ? "slot-ocupado" : "slot-indisponivel"
+                );
+                botao.setAttribute("aria-label", `${item.horario} ${estado.textContent}`);
+            }
+
+            horariosGrade.appendChild(botao);
+        }
+
+        if (livres === 0) {
+            mensagemReserva.textContent = "Não há horários livres nessa data para esse serviço.";
+        } else {
+            mensagemReserva.textContent = `${livres} horário(s) livre(s). Selecione um para confirmar.`;
+        }
+
+        if (horarioDesejado) {
+            const pretendido = ultimaListaHorarios.find(
+                (item) => item.horario === horarioDesejado && item.disponivel
             );
+            if (pretendido) {
+                const indice = ultimaListaHorarios.indexOf(pretendido);
+                horariosGrade.children[indice].click();
+            }
         }
-
-        // Recupera escolhas feitas na pagina inicial.
-        const parametros = new URLSearchParams(
-            window.location.search
-        );
-
-        const nomeEscolhido = parametros.get("servico");
-        const selecionado = resultado.find(
-            (item) => item.nome === nomeEscolhido
-        );
-
-        if (selecionado) {
-            servicoCampo.value = String(selecionado.id);
-        }
-
-        const dataEscolhida = parametros.get("data");
-
-        if (
-            dataEscolhida &&
-            /^\d{4}-\d{2}-\d{2}$/.test(dataEscolhida) &&
-            dataEscolhida >= agoraFortaleza().data
-        ) {
-            dataCampo.value = dataEscolhida;
-        }
-
-        atualizarHorarios();
-
-        const horarioEscolhido = parametros.get("horario");
-
-        if (
-            horarioEscolhido &&
-            [...horarioCampo.options].some(
-                (opcao) => opcao.value === horarioEscolhido
-            )
-        ) {
-            horarioCampo.value = horarioEscolhido;
-        }
-
-        mensagemReserva.textContent = resultado.length
-            ? "Escolha um horário para confirmar sua reserva."
-            : "Nenhum serviço disponível no momento.";
-
     } catch (erro) {
-        mensagemReserva.textContent = erro.message;
+        if (sequencia !== sequenciaConsulta) return;
+        avisoNaGrade(horariosGrade, "Não foi possível consultar os horários.");
+        tratarErro(erro, mensagemReserva);
+    } finally {
+        if (sequencia === sequenciaConsulta) atualizarBotaoConfirmar();
     }
 }
 
-/**
- * Cria uma linha de texto segura.
- */
-function criarTexto(rotulo, valor) {
-    const paragrafo = document.createElement("p");
-    paragrafo.textContent = `${rotulo}: ${valor}`;
-    return paragrafo;
+/** Carrega servicos do banco e inicia a tabela de dias. */
+async function carregarServicos() {
+    mensagemReserva.textContent = "Carregando serviços...";
+    const dados = await chamarApi("/api/servicos", {}, false);
+
+    if (!Array.isArray(dados)) {
+        throw new Error("Resposta inesperada da lista de serviços.");
+    }
+
+    servicosDisponiveis = dados;
+    servicoCampo.replaceChildren(new Option("Selecione o serviço", ""));
+
+    for (const servico of dados) {
+        const preco = (servico.preco_centavos / 100)
+            .toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        servicoCampo.appendChild(
+            new Option(`${servico.nome} — ${preco}`, String(servico.id))
+        );
+    }
+
+    const preEscolhido = dados.find((s) => s.nome === nomeServicoInicial);
+    // Ao entrar, ja mostra a grade do primeiro servico ativo.
+    const inicial = preEscolhido || dados[0];
+    if (inicial) servicoCampo.value = String(inicial.id);
+
+    await gerarDias();
+    if (!dados.length) mensagemReserva.textContent = "Nenhum serviço disponível no momento.";
 }
 
-/**
- * Mostra somente os agendamentos do cliente logado.
- * A API realiza a filtragem pelo usuario do JWT.
- */
+function texto(rotulo, valor) {
+    const p = document.createElement("p");
+    p.textContent = `${rotulo}: ${valor}`;
+    return p;
+}
+
+/** Carrega o historico restrito ao cliente autenticado. */
 async function carregarReservas() {
-    mensagemLista.textContent = "Carregando reservas...";
+    mensagemLista.textContent = "Carregando agendamentos...";
     botaoAtualizar.disabled = true;
 
     try {
         const reservas = await chamarApi("/api/agendamentos");
-
         if (!Array.isArray(reservas)) {
-            throw new Error("Resposta inválida das reservas.");
+            throw new Error("Resposta inesperada dos agendamentos.");
         }
 
         listaReservas.replaceChildren();
-
-        if (reservas.length === 0) {
-            mensagemLista.textContent =
-                "Você ainda não possui agendamentos.";
+        if (!reservas.length) {
+            mensagemLista.textContent = "Você ainda não possui agendamentos.";
             return;
         }
 
         for (const reserva of reservas) {
             const item = document.createElement("li");
             item.className = "item-reserva-cliente";
-
             const titulo = document.createElement("h4");
             titulo.textContent = reserva.servico;
-
             item.appendChild(titulo);
-            item.appendChild(
-                criarTexto("Número", reserva.id)
-            );
-            item.appendChild(
-                criarTexto(
-                    "Início",
-                    formatarInicio(reserva.inicio)
-                )
-            );
-            item.appendChild(
-                criarTexto("Status", reserva.status)
-            );
+            item.appendChild(texto("Número", reserva.id));
+            item.appendChild(texto("Data", formatarInicio(reserva.inicio)));
+            item.appendChild(texto("Status", reserva.status));
 
             if (reserva.status === "agendado") {
                 const botao = document.createElement("button");
                 botao.type = "button";
                 botao.className = "botao-cancelar";
                 botao.textContent = "Cancelar reserva";
-
                 botao.addEventListener("click", async () => {
-                    if (!window.confirm(
-                        `Cancelar a reserva nº ${reserva.id}?`
-                    )) {
-                        return;
-                    }
-
+                    if (!window.confirm(`Cancelar a reserva nº ${reserva.id}?`)) return;
                     botao.disabled = true;
-                    mensagemLista.textContent =
-                        "Cancelando reserva...";
-
+                    mensagemLista.textContent = "Cancelando reserva...";
                     try {
-                        await chamarApi(
-                            `/api/agendamentos/${reserva.id}`,
-                            { method: "DELETE" }
-                        );
-
+                        await chamarApi(`/api/agendamentos/${reserva.id}`, {
+                            method: "DELETE"
+                        });
                         await carregarReservas();
-                        mensagemLista.textContent =
-                            `Reserva nº ${reserva.id} cancelada.`;
-
+                        await carregarHorarios();
+                        mensagemLista.textContent = `Reserva nº ${reserva.id} cancelada.`;
                     } catch (erro) {
                         tratarErro(erro, mensagemLista);
                         botao.disabled = false;
                     }
                 });
-
                 item.appendChild(botao);
             }
 
             listaReservas.appendChild(item);
         }
-
-        mensagemLista.textContent =
-            `${reservas.length} agendamento(s) encontrado(s).`;
-
+        mensagemLista.textContent = `${reservas.length} agendamento(s) encontrado(s).`;
     } catch (erro) {
         tratarErro(erro, mensagemLista);
-
     } finally {
         botaoAtualizar.disabled = false;
     }
 }
 
-/**
- * Faz login como cliente.
- */
+/** Valida JWT e apresenta agenda imediatamente depois do login. */
+async function abrirAreaCliente(usuario, rolar = false) {
+    mostrarCliente(usuario);
+    try {
+        await carregarServicos();
+        await carregarReservas();
+        if (rolar) {
+            $("#secao-agendar").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    } catch (erro) {
+        tratarErro(erro, mensagemReserva);
+    }
+}
+
 formLogin.addEventListener("submit", async (evento) => {
     evento.preventDefault();
-
-    mensagemLogin.textContent = "Verificando credenciais...";
     botaoLogin.disabled = true;
+    mensagemLogin.textContent = "Verificando login...";
 
     try {
-        const dados = await chamarApi(
-            "/api/auth/login",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    email: $("#email-cliente").value.trim(),
-                    senha: $("#senha-cliente").value
-                })
-            },
-            false
-        );
+        const dados = await chamarApi("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: $("#email-cliente").value.trim(),
+                senha: $("#senha-cliente").value
+            })
+        }, false);
 
-        if (
-            dados.usuario?.papel !== "cliente" ||
-            typeof dados.token !== "string"
-        ) {
-            throw new Error(
-                "Esta área é exclusiva para clientes."
-            );
+        if (dados?.usuario?.papel !== "cliente" || typeof dados.token !== "string") {
+            throw new Error("Esta área é exclusiva para clientes.");
         }
 
         sessionStorage.setItem(CHAVE_TOKEN, dados.token);
-
-        mostrarCliente(dados.usuario);
-        await carregarServicos();
-        await carregarReservas();
-
+        await abrirAreaCliente(dados.usuario, true);
     } catch (erro) {
         mensagemLogin.textContent = erro.message;
-
     } finally {
         botaoLogin.disabled = false;
     }
 });
 
-/**
- * Confirma o agendamento somente apos o servidor
- * salvar a reserva no SQLite.
- */
+servicoCampo.addEventListener("change", () => {
+    confirmacao.hidden = true;
+    carregarHorarios();
+});
+
 formReserva.addEventListener("submit", async (evento) => {
     evento.preventDefault();
-
     confirmacao.hidden = true;
 
-    if (!formReserva.reportValidity()) {
-        return;
-    }
+    const servicoId = Number(servicoCampo.value);
+    const data = dataCampo.value;
+    const horario = horarioCampo.value;
+    const podeAgendar = ultimaListaHorarios.some(
+        (item) => item.horario === horario && item.disponivel
+    );
 
-    const agora = agoraFortaleza();
-
-    if (dataCampo.value < agora.data) {
-        mensagemReserva.textContent =
-            "Escolha uma data futura.";
+    if (!Number.isSafeInteger(servicoId) || !data || !horario || !podeAgendar) {
+        mensagemReserva.textContent = "Escolha um serviço, um dia e um horário livre.";
         return;
     }
 
     botaoConfirmar.disabled = true;
-    mensagemReserva.textContent =
-        "Confirmando seu agendamento...";
+    mensagemReserva.textContent = "Confirmando agendamento...";
 
     try {
-        const reserva = await chamarApi(
-            "/api/agendamentos",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    servico_id: Number(servicoCampo.value),
-                    data: dataCampo.value,
-                    horario: horarioCampo.value
-                })
-            }
-        );
+        const reserva = await chamarApi("/api/agendamentos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                servico_id: servicoId,
+                data,
+                horario
+            })
+        });
 
         if (!Number.isSafeInteger(reserva?.id)) {
-            throw new Error(
-                "O servidor não retornou a confirmação."
-            );
+            throw new Error("A API não retornou o número da confirmação.");
         }
 
         $("#detalhes-confirmacao").textContent =
-            `Reserva nº ${reserva.id} — ${reserva.servico}, ` +
-            `${formatarInicio(reserva.inicio)}.`;
-
+            `Reserva nº ${reserva.id} — ${reserva.servico}, ${formatarInicio(reserva.inicio)}.`;
         confirmacao.hidden = false;
-        mensagemReserva.textContent =
-            "Sua reserva foi salva com sucesso!";
 
         await carregarReservas();
-
+        await carregarHorarios();
+        mensagemReserva.textContent = "Reserva salva no SQLite com sucesso!";
     } catch (erro) {
         if (erro.status === 409) {
             mensagemReserva.textContent =
-                "Esse horário já está ocupado. Escolha outro.";
+                "Esse horário acabou de ser reservado. Escolha outro horário livre.";
+            await carregarHorarios();
+            // Mantem o erro visivel apos atualizar a tabela.
+            mensagemReserva.textContent =
+                "Horário ocupado! A tabela foi atualizada. Escolha outro.";
         } else {
             tratarErro(erro, mensagemReserva);
         }
-
     } finally {
-        botaoConfirmar.disabled = false;
+        atualizarBotaoConfirmar();
     }
 });
 
-servicoCampo.addEventListener("change", atualizarHorarios);
-dataCampo.addEventListener("change", atualizarHorarios);
-
 $("#botao-sair-cliente").addEventListener("click", () => sair());
+botaoAtualizar.addEventListener("click", () => carregarReservas());
+$("#botao-atualizar-horarios").addEventListener("click", () => carregarHorarios());
 
-botaoAtualizar.addEventListener(
-    "click",
-    () => carregarReservas()
-);
-
-/**
- * Restaura uma sessao valida apos atualizar a pagina.
- */
-async function iniciar() {
-    dataCampo.min = agoraFortaleza().data;
-
-    if (!sessionStorage.getItem(CHAVE_TOKEN)) {
-        return;
+// Ao retornar para uma aba aberta, consulta o estado mais recente do SQLite.
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !secaoCliente.hidden) {
+        carregarHorarios();
+        carregarReservas();
     }
+});
+
+/** Restaura a sessao apos atualizar a pagina. */
+async function iniciar() {
+    if (!sessionStorage.getItem(CHAVE_TOKEN)) return;
 
     try {
         const usuario = await chamarApi("/api/auth/me");
-
         if (usuario.papel !== "cliente") {
             sair("Entre com uma conta de cliente.");
             return;
         }
-
-        mostrarCliente(usuario);
-        await carregarServicos();
-        await carregarReservas();
-
+        await abrirAreaCliente(usuario, true);
     } catch (erro) {
         if (erro.status === 401) {
-            sair("Sua sessão expirou. Faça login novamente.");
+            sair("Sessão expirada. Faça login novamente.");
         } else {
             mensagemLogin.textContent = erro.message;
         }

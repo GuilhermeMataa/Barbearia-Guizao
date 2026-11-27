@@ -1,10 +1,37 @@
 
 /**
- * cadastrarCliente: Documenta a operação da camada e as garantias aplicadas.
- *
- * @param {{nome:string,email:string,senhaHash:string}} dados - Cliente já validado e senha em hash.
- * @returns {object} Usuário persistido sem hash de senha.
- * @throws {Error} Restrição UNIQUE do e-mail ou falha SQLite.
+ * Guizao do Corte - Repositorio de usuarios.
+ */
+
+"use strict";
+
+const db = require("./conexao");
+
+/**
+ * Busca usuario pelo email para autenticar.
+ */
+function buscarPorEmail(email) {
+    return db.prepare(`
+        SELECT id, nome, email, senha_hash, papel
+        FROM usuarios
+        WHERE email = ?
+    `).get(email);
+}
+
+/**
+ * Busca usuario pelo ID, sem expor a senha.
+ */
+function buscarPorId(id) {
+    return db.prepare(`
+        SELECT id, nome, email, papel
+        FROM usuarios
+        WHERE id = ?
+    `).get(id);
+}
+
+/**
+ * Cadastra uma conta com papel de cliente.
+ * O navegador nunca pode definir o papel.
  */
 function cadastrarCliente(dados) {
     const resultado = db.prepare(`

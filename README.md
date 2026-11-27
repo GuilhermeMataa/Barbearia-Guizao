@@ -49,9 +49,9 @@ Preencha o arquivo `.env` com valores próprios:
 ```dotenv
 DB_PATH=dados/barbearia.sqlite
 SEED_ADMIN_EMAIL=admin@guizao.test
-SEED_ADMIN_PASSWORD=SUBSTITUA_POR_SENHA_FORTE
+SEED_ADMIN_PASSWORD=AdminGuizao#2026!
 SEED_CLIENT_EMAIL=cliente@guizao.test
-SEED_CLIENT_PASSWORD=SUBSTITUA_POR_OUTRA_SENHA_FORTE
+SEED_CLIENT_PASSWORD=ClienteGuizao#2026!
 JWT_SECRET=COLE_AQUI_UMA_CHAVE_SECRETA_ALEATORIA_SEGURA
 PORT=3001
 ```
@@ -99,6 +99,18 @@ Se `PORT` não for definido, o servidor usa a porta **3000**.
 
 O cadastro público sempre cria contas com o perfil **cliente**; ele não permite criar administradores.
 
+### Contas de demonstração
+
+Depois de executar `npm run db:seed` **num banco novo**, use estas credenciais de exemplo, que correspondem aos valores acima:
+
+| Papel | E-mail | Senha de demonstração |
+| --- | --- | --- |
+| Administrador | `admin@guizao.test` | `AdminGuizao#2026!` |
+| Cliente | `cliente@guizao.test` | `ClienteGuizao#2026!` |
+
+**Importante:** são apenas credenciais fictícias destinadas à avaliação local. Em uso real, escolha senhas próprias e não publique o seu `.env`. O seed não altera contas previamente cadastradas; se o banco já existia, as senhas continuam sendo as configuradas quando essas contas foram criadas.
+
+
 ## Regras de agendamento
 
 - Funcionamento: **09:00 às 18:00**, em horários de início a cada **30 minutos**.
@@ -111,21 +123,24 @@ O cadastro público sempre cria contas com o perfil **cliente**; ele não permit
 
 ## API REST
 
-| Método | Rota | Acesso | Finalidade |
-| --- | --- | --- | --- |
-| GET | `/api/saude` | Público | Verificar o funcionamento da API |
-| POST | `/api/auth/cadastro` | Público | Cadastrar cliente |
-| POST | `/api/auth/login` | Público | Autenticar e obter JWT |
-| GET | `/api/auth/me` | Autenticado | Consultar a própria conta |
-| GET | `/api/servicos` | Público | Listar serviços ativos |
-| GET | `/api/servicos/:id` | Público | Consultar serviço |
-| POST | `/api/servicos` | Administrador | Cadastrar serviço |
-| PUT | `/api/servicos/:id` | Administrador | Atualizar serviço |
-| DELETE | `/api/servicos/:id` | Administrador | Desativar serviço |
-| GET | `/api/agendamentos/disponibilidade?data=AAAA-MM-DD&servico_id=1` | Público | Consultar horários livres e ocupados |
-| GET | `/api/agendamentos` | Autenticado | Listar as próprias reservas ou todas, se administrador |
-| POST | `/api/agendamentos` | Autenticado | Confirmar uma reserva |
-| DELETE | `/api/agendamentos/:id` | Autenticado | Cancelar uma reserva permitida |
+| Método | Rota | Papel exigido | Status HTTP possíveis | Finalidade |
+| --- | --- | --- | --- | --- |
+| GET | `/api/saude` | Público | 200 | Verificar funcionamento |
+| POST | `/api/auth/cadastro` | Público | 201, 400, 409, 429 | Criar conta de cliente |
+| POST | `/api/auth/login` | Público | 200, 400, 401, 429 | Entrar e obter JWT |
+| GET | `/api/auth/me` | Autenticado | 200, 401 | Consultar conta atual |
+| GET | `/api/servicos` | Público | 200 | Listar serviços ativos |
+| GET | `/api/servicos/:id` | Público | 200, 400, 404 | Consultar um serviço |
+| POST | `/api/servicos` | Administrador | 201, 400, 401, 403, 409 | Cadastrar serviço |
+| PUT | `/api/servicos/:id` | Administrador | 200, 400, 401, 403, 404, 409 | Atualizar serviço |
+| DELETE | `/api/servicos/:id` | Administrador | 204, 400, 401, 403, 404 | Desativar serviço |
+| GET | `/api/agendamentos/disponibilidade?data=AAAA-MM-DD&servico_id=1` | Público | 200, 400, 404 | Consultar horários |
+| GET | `/api/agendamentos` | Autenticado | 200, 401 | Ver reservas permitidas |
+| POST | `/api/agendamentos` | Autenticado | 201, 400, 401, 404, 409 | Confirmar agendamento |
+| DELETE | `/api/agendamentos/:id` | Autenticado | 204, 400, 401, 404 | Cancelar reserva permitida |
+
+Os códigos acima indicam os resultados previstos pelo tratamento explícito de cada rota. Falhas inesperadas podem retornar `500`; requisições excessivas podem receber `429` pelos limitadores globais. Em caso de `204`, não há corpo de resposta.
+
 
 ### Exemplo de criação de agendamento
 
@@ -188,7 +203,13 @@ node --check publico/js/painel-cliente.js
 
 **Cenários de validação manual:** cadastro de cliente; login de ambos os perfis; agendamento válido; bloqueio de horário ocupado; rejeição de data passada; listagem limitada ao cliente autenticado; cancelamento próprio; tentativa de cancelar reserva de outro usuário; atualização da disponibilidade após cancelamento.
 
-> **Estado atual dos testes:** o script `npm test` ainda não executa uma suíte automatizada (é um placeholder no `package.json`). Os testes automatizados de integração serão adicionados em uma etapa posterior.
+Para executar **testes automatizados de integração da API** com banco SQLite temporário, sem tocar no banco local:
+
+```bash
+npm test
+```
+
+Os testes cobrem autenticação, cadastro, permissões, CRUD de serviços, conflitos de agendamento, isolamento entre clientes e cancelamento. Na validação local de 27/11/2026 foram aprovados 4 testes, com 0 falhas.
 
 ## Segurança e observações
 
@@ -197,6 +218,51 @@ node --check publico/js/painel-cliente.js
 - O backend controla quais agendamentos cada usuário pode consultar ou cancelar; ocultar botões no frontend não substitui a autorização na API.
 - O catálogo e a agenda pública não divulgam nomes de clientes nem dados pessoais.
 - O projeto foi preparado para execução local e avaliação acadêmica. Para disponibilizá-lo publicamente, revise configurações de produção, HTTPS, persistência e estratégias de sessão.
+
+## Modelo de dados e integridade
+
+O arquivo `dados/schema.sql` cria três tabelas, todas com chave primária `id`:
+
+| Tabela | Função | Restrições |
+| --- | --- | --- |
+| `usuarios` | Armazena contas, senha em hash e papel | `email UNIQUE`, `senha_hash NOT NULL`, `papel CHECK ('cliente','admin')` |
+| `servicos` | Catálogo com preço, duração e estado ativo | `nome UNIQUE`, `duracao_minutos > 0`, `preco_centavos >= 0` |
+| `agendamentos` | Relaciona cliente e serviço no intervalo escolhido | `usuario_id` e `servico_id` como FKs obrigatórias, `fim > inicio` e `status CHECK` |
+
+Relações: `agendamentos.usuario_id → usuarios.id` e `agendamentos.servico_id → servicos.id` (com `FOREIGN KEY`, `NOT NULL` e restrição de exclusão). O banco protege integridade e unicidade de e-mails/nomes; a regra de **não sobrepor atendimentos** é garantida no servidor por consulta parametrizada e inserção na **mesma transação imediata** em `dados/repositorioAgendamentos.js`.
+
+Em `dados/consultas.js`, `listarAgendamentos()` usa `INNER JOIN` entre as três tabelas, e `resumoServicos()` usa `LEFT JOIN`, `COUNT` e `GROUP BY`. Nenhuma consulta SQL concatena entradas de usuário.
+
+## Regras de negócio no servidor
+
+| Regra | Implementação |
+| --- | --- |
+| Não permitir horários sobrepostos entre clientes, considerando a duração | `servicos/agendamentosService.js` e `dados/repositorioAgendamentos.js` (transação; conflito → 409) |
+| Não permitir início no passado nem conclusão após 18h | `servicos/agendamentosService.js` (dados inválidos → 400) |
+| Cliente só pode listar/cancelar as próprias reservas | `servicos/agendamentosService.js` e `dados/repositorioAgendamentos.js` (filtro no SQL; acesso negado → 404) |
+| Cadastro público jamais cria administrador | `servicos/autenticacaoService.js` e `dados/repositorioUsuarios.js` |
+| Serviço inativo não pode ser reservado | `servicos/agendamentosService.js` e `dados/repositorioServicos.js` (404) |
+
+## Medidas de segurança e arquivos
+
+- `servicos/autenticacaoService.js`: hash de senha com `bcrypt` antes de salvar e conferência com `bcrypt.compare`.
+- `servicos/autenticacaoService.js` e `middlewares/autenticacao.js`: emissão/verificação de JWT com algoritmo, emissor, público e validade definidos.
+- `middlewares/autenticacao.js` e `rotas/servicos.js`: middleware de autenticação e autorização por papel.
+- `dados/repositorioAgendamentos.js`: filtros por `usuario_id` no SQL para impedir IDOR e dados de outros clientes.
+- `dados/repositorioServicos.js`, `dados/repositorioUsuarios.js` e `dados/repositorioAgendamentos.js`: parâmetros `?` em todas as consultas SQL, evitando injeção.
+- `servidor.js`: `helmet()` para cabeçalhos HTTP, limite global de requisições e limite de JSON de 10 KB.
+- `rotas/autenticacao.js`: limite especial de tentativas em login e cadastro para reduzir abuso.
+- `publico/js/`: DOM com `textContent` para dados externos em vez de inserir HTML interpretável.
+- `.gitignore` e `.env.example`: segredos e banco de dados local fora do controle de versão.
+
+## Limitações conhecidas
+
+- A agenda pressupõe um único profissional/recurso de atendimento: não há múltiplas cadeiras ou barbeiros em paralelo.
+- Horário de funcionamento fixo (09h–18h), sem configuração de feriados, folgas individuais ou turnos especiais.
+- O front mostra 14 dias; a API valida data, horário e conflitos mesmo em requisições diretas.
+- Não há pagamento online, notificações por e-mail/WhatsApp nem recuperação de senha.
+- Aplicação voltada à execução local acadêmica. Publicação na internet exigiria HTTPS, persistência, gestão de segredos e revisão de sessão.
+- Senhas do seed só são aplicadas a contas ainda não cadastradas; `npm run db:seed` não redefine senhas existentes.
 
 ## Repositório
 
